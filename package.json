@@ -1,8 +1,8 @@
 {
 	"publisher": "baincd",
-	"name": "diff-lang-colorizer",
-	"displayName": "Diff Lang Colorizer",
-	"description": "Apply colors and styles to diff and patch files",
+	"name": "markdown-color-plus",
+	"displayName": "Markdown Color Plus",
+	"description": "Additional Colorization for Markdown Files",
 	"version": "1.0.0",
 	"license": "MIT",
 	"engines": {
@@ -10,13 +10,13 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/baincd/vscode-diff-lang-colorizer"
+		"url": "https://github.com/baincd/vscode-markdown-color-plus"
 	},
 	"categories": [
 		"Programming Languages"
 	],
 	"activationEvents": [
-		"onLanguage:diff"
+		"onLanguage:markdown"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
