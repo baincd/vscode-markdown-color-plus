@@ -2,7 +2,7 @@
 	"publisher": "baincd",
 	"name": "diff-lang-colorizer",
 	"displayName": "Diff Lang Colorizer",
-	"description": "Apply theme colors to diff and patch files",
+	"description": "Apply colors and styles to diff and patch files",
 	"version": "0.0.1",
 	"license": "MIT",
 	"engines": {
