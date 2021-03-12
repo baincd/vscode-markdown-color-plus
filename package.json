@@ -3,7 +3,7 @@
 	"name": "diff-lang-colorizer",
 	"displayName": "Diff Lang Colorizer",
 	"description": "Apply colors and styles to diff and patch files",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"license": "MIT",
 	"engines": {
 		"vscode": "^1.32.0"
