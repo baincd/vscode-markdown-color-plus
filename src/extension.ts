@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 		fencedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: "#777777",
+			backgroundColor: "#CCCCCCCC",
 			isWholeLine: true
 		});
 
@@ -38,6 +38,12 @@ export function activate(context: vscode.ExtensionContext) {
 	// RegExs based on https://github.com/microsoft/vscode/blob/a699ffaee62010c4634d301da2bbdb7646b8d1da/extensions/markdown-basics/syntaxes/markdown.tmLanguage.json
 	const fencedCodeBlockStartRegEx = /^(\s*)(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 	const fencedCodeBlockEndRegExStr = "^({MATCH1}|\\s{0,3})({MATCH2})\\s*$" // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
+
+	const codeBlockRegEx = /^([ ]{4}|\\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
+
+	const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
+	const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
+	const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
 
 	function updateDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
 		if (editor?.document.languageId != 'markdown') {
@@ -65,6 +71,24 @@ export function activate(context: vscode.ExtensionContext) {
 					endLine = doc.lineCount - 1;
 				}
 				fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
+			} else if (codeBlockRegEx.test(line.text)) {
+				let isCodeBlock: boolean;
+				if (lineIdx == 0) {
+					isCodeBlock = true;
+				} else {
+					let prevLineText = doc.lineAt(lineIdx - 1).text;
+					isCodeBlock = prevLineText.trim().length == 0 
+								|| headingRegEx.test(prevLineText)
+								|| endFencedCodeBlockRegEx.test(prevLineText)
+								|| blockQuoteRegEx.test(prevLineText);
+				}
+				if (isCodeBlock) {
+					let startLine = lineIdx;
+					while (++lineIdx < doc.lineCount && codeBlockRegEx.test(doc.lineAt(lineIdx).text)) {
+					}
+					let endLine = --lineIdx;
+					fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
+				}
 			}
 		}
 		editor.setDecorations(fencedCodeBlockDecorationType, fencedCodeBlocks);
