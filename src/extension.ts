@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const fencedCodeBlockStartRegEx = /^(\s*)(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 	const fencedCodeBlockEndRegExStr = "^({MATCH1}|\\s{0,3})({MATCH2})\\s*$" // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
 
-	const codeBlockRegEx = /^([ ]{4}|\\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
+	const codeBlockRegEx = /^([ ]{4}|\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
 
 	const inlineCodeRegEx = /`[^`]*`/g
 
@@ -66,18 +66,20 @@ export function activate(context: vscode.ExtensionContext) {
 			let line = doc.lineAt(lineIdx);
 			if (match = line.text.match(fencedCodeBlockStartRegEx)) {
 				let startLine = lineIdx + 1;
-				let fencedCodeBlockEndRegEx = new RegExp(fencedCodeBlockEndRegExStr.replace("{MATCH1}",match[1]).replace("{MATCH2}",match[2]));
-				let endLine = 0;
-				while (endLine == 0 && ++lineIdx < doc.lineCount) {
-					line = doc.lineAt(lineIdx);
-					if (line.text.match(fencedCodeBlockEndRegEx)) {
-						endLine = lineIdx - 1;
+				if (startLine < doc.lineCount) { 
+					let fencedCodeBlockEndRegEx = new RegExp(fencedCodeBlockEndRegExStr.replace("{MATCH1}",match[1]).replace("{MATCH2}",match[2]));
+					let endLine = -1;
+					while (endLine == -1 && ++lineIdx < doc.lineCount) {
+						line = doc.lineAt(lineIdx);
+						if (line.text.match(fencedCodeBlockEndRegEx)) {
+							endLine = lineIdx - 1;
+						}
 					}
+					if (endLine == -1) {
+						endLine = doc.lineCount - 1;
+					}
+					fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 				}
-				if (endLine == 0) {
-					endLine = doc.lineCount - 1;
-				}
-				fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 			} else if (codeBlockRegEx.test(line.text)) {
 				let isCodeBlock: boolean;
 				if (lineIdx == 0) {
