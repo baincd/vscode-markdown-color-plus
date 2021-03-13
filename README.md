@@ -28,4 +28,4 @@ All these features can be configured or disabled
 
 #### Known Limitations
 
-* The header highlights do not refresh if you move the cursor to whitespace (making an edit or moving the cursor to text will update the header highlights)
+* Due to limitations with the VS Code API, header highlights do not refresh when you move the cursor to whitespace or certain characters like `)`.  To update the header highlights, edit the document or move the cursor to another word.
