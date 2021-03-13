@@ -9,3 +9,4 @@ These are all considered a very low priority, with no current plans to be fixed.
 * Inline code that spans multiple lines will not have the background set
 * Invisible line breaks will not be highlighted on non-table lines that start and end with |
 * Invisible line breaks within inline code is highlighted 
+* The header highlights do not refresh if you move the cursor to whitespace (making an edit or moving the cursor to text will update the header highlights)

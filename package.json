@@ -81,6 +81,21 @@
 					"type": "string",
 					"default": "#4169E133",
 					"markdownDescription": "CSS color for invisible line breaks (2 spaces at the end of a line) on dark themes"
+				},
+				"markdown-color-plus.currentHeaders.background.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable highlighting of headers for current cursor position"
+				},
+				"markdown-color-plus.currentHeaders.background.lightThemeColor": {
+					"type": "string",
+					"default": "#FFFACD70",
+					"markdownDescription": "CSS color of headers for current cursor position on light themes"
+				},
+				"markdown-color-plus.currentHeaders.background.darkThemeColor": {
+					"type": "string",
+					"default": "#8A2BE240",
+					"markdownDescription": "CSS color of headers for current cursor position on dark themes"
 				}
 			}
 		}
