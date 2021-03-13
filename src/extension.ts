@@ -84,7 +84,9 @@ export function activate(context: vscode.ExtensionContext) {
 					if (endLine == -1) {
 						endLine = doc.lineCount - 1;
 					}
-					fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
+					if (startLine <= endLine) {
+						fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
+					}
 				}
 			} else if (indentedCodeBlockRegEx.test(line.text)) {
 				let isCodeBlock: boolean;
@@ -99,9 +101,16 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				if (isCodeBlock) {
 					let startLine = lineIdx;
-					while (++lineIdx < doc.lineCount && indentedCodeBlockRegEx.test(doc.lineAt(lineIdx).text)) {
+					let endOfBlockFound = false;
+					let endLine = startLine;
+					while (!endOfBlockFound && ++lineIdx < doc.lineCount) {
+						if (indentedCodeBlockRegEx.test(doc.lineAt(lineIdx).text)) {
+							endLine = lineIdx;
+						} else if (doc.lineAt(lineIdx).text.trim().length != 0) {
+							endOfBlockFound = true
+							lineIdx--; // set line index to previous line, so next time through loop evaluates this line
+						}	
 					}
-					let endLine = --lineIdx;
 					indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 				}
 			} else {
