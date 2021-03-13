@@ -9,10 +9,12 @@ export function activate(context: vscode.ExtensionContext) {
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationOptions
 	let fencedCodeBlockDecorationType: vscode.TextEditorDecorationType;
+	let indentedCodeBlockDecorationType: vscode.TextEditorDecorationType;
 	let inlineCodeDecorationType: vscode.TextEditorDecorationType;
 
 	function disposeAllTextDecorations() {
 		fencedCodeBlockDecorationType?.dispose();
+		indentedCodeBlockDecorationType?.dispose();
 		inlineCodeDecorationType?.dispose();
 	}
 
@@ -21,6 +23,11 @@ export function activate(context: vscode.ExtensionContext) {
 		let colorizerConfig = vscode.workspace.getConfiguration("markdown-color-plus");
 
 		fencedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
+			backgroundColor: "#CCCCCCCC",
+			isWholeLine: true
+		});
+
+		indentedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
 			backgroundColor: "#CCCCCCCC",
 			isWholeLine: true
 		});
@@ -43,9 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const fencedCodeBlockStartRegEx = /^(\s*)(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 	const fencedCodeBlockEndRegExStr = "^({MATCH1}|\\s{0,3})({MATCH2})\\s*$" // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
 
-	const codeBlockRegEx = /^([ ]{4}|\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
-
-	const inlineCodeRegEx = /`[^`]*`/g
+	const indentedCodeBlockRegEx = /^([ ]{4}|\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
 
 	const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
 	const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
@@ -57,6 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		const fencedCodeBlocks: vscode.DecorationOptions[] = [];
+		const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 		const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 
 		let doc = editor.document;
@@ -80,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 					fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 				}
-			} else if (codeBlockRegEx.test(line.text)) {
+			} else if (indentedCodeBlockRegEx.test(line.text)) {
 				let isCodeBlock: boolean;
 				if (lineIdx == 0) {
 					isCodeBlock = true;
@@ -93,10 +99,10 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				if (isCodeBlock) {
 					let startLine = lineIdx;
-					while (++lineIdx < doc.lineCount && codeBlockRegEx.test(doc.lineAt(lineIdx).text)) {
+					while (++lineIdx < doc.lineCount && indentedCodeBlockRegEx.test(doc.lineAt(lineIdx).text)) {
 					}
 					let endLine = --lineIdx;
-					fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
+					indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 				}
 			} else {
 				let searchFrom = 0;
@@ -113,11 +119,13 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 		editor.setDecorations(fencedCodeBlockDecorationType, fencedCodeBlocks);
+		editor.setDecorations(indentedCodeBlockDecorationType, indentedCodeBlocks);
 		editor.setDecorations(inlineCodeDecorationType, inlineCodeBlocks);
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
 		editor?.setDecorations(fencedCodeBlockDecorationType, []);
+		editor?.setDecorations(indentedCodeBlockDecorationType, []);
 		editor?.setDecorations(inlineCodeDecorationType, []);
 	}
 
