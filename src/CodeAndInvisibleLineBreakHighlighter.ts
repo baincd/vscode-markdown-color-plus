@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
 
-// this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
-
-	// console.log('markdown-color-plus');
 
 	// ***** Read config and manage text decorations *****
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions
