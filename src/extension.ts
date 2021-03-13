@@ -11,14 +11,17 @@ export function activate(context: vscode.ExtensionContext) {
 	let fencedCodeBlockDecorationType: vscode.TextEditorDecorationType;
 	let indentedCodeBlockDecorationType: vscode.TextEditorDecorationType;
 	let inlineCodeDecorationType: vscode.TextEditorDecorationType;
+	let invisibleLineBreakHighlightDecorationType: vscode.TextEditorDecorationType;
 	let fencedCodeBlockBackgroundEnabled: boolean;
 	let indentedCodeBlockBackgroundEnabled: boolean;
 	let inlineCodeBackgroundEnabled: boolean;
+	let invisibleLineBreakHighlightEnabled: boolean;
 
 	function disposeAllTextDecorations() {
 		fencedCodeBlockDecorationType?.dispose();
 		indentedCodeBlockDecorationType?.dispose();
 		inlineCodeDecorationType?.dispose();
+		invisibleLineBreakHighlightDecorationType?.dispose();
 	}
 
 	function handleUpdatedConfig() {
@@ -44,6 +47,12 @@ export function activate(context: vscode.ExtensionContext) {
 			light: { backgroundColor: colorizerConfig.get<string>('inlineCode.background.lightThemeColor') },
 			dark:  { backgroundColor: colorizerConfig.get<string>('inlineCode.background.darkThemeColor') },
 		});
+
+		invisibleLineBreakHighlightEnabled = colorizerConfig.get<boolean>('invisibleLineBreak.background.enabled',false)
+		invisibleLineBreakHighlightDecorationType = vscode.window.createTextEditorDecorationType({
+			light: { backgroundColor: colorizerConfig.get<string>('invisibleLineBreak.background.lightThemeColor') },
+			dark:  { backgroundColor: colorizerConfig.get<string>('invisibleLineBreak.background.darkThemeColor') },
+		});
 	}
 
 	handleUpdatedConfig();
@@ -65,6 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
 	const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
 	const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
 
+	const nonPlainLineRegEx = /^\s*(#{1,6} .*|={2,}|-{2,}|\s{4}.*|\t.*|\*{3,}|_{3,}|\|.*\|)\s*$/ // # Header | Header == | Header -- | indented code block spaces | indented code block tab | Horizontal Rule *** | Horizontal Rule ___ | Table-ish (start and end with pipe)
+	const invisibleLineBreakRegEx = /\s\s$/
+
 	function updateDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
 		if (editor?.document.languageId != 'markdown') {
 			return;
@@ -73,6 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 		const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 		const inlineCodeBlocks: vscode.DecorationOptions[] = [];
+		const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 
 		let doc = editor.document;
 		let match: RegExpMatchArray | null = null;5
@@ -134,18 +147,24 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				}
 
+				if (doc.lineAt(lineIdx).text.trim().length != 0 && invisibleLineBreakRegEx.test(line.text) && !nonPlainLineRegEx.test(line.text)) {
+					invisibleLineBreaks.push({range: new vscode.Range(lineIdx, line.text.length-2, lineIdx, line.text.length)});
+				}
+
 			}
 		}
 
 		editor.setDecorations(fencedCodeBlockDecorationType, (fencedCodeBlockBackgroundEnabled ? fencedCodeBlocks : []));
 		editor.setDecorations(indentedCodeBlockDecorationType, (indentedCodeBlockBackgroundEnabled ? indentedCodeBlocks : []));
 		editor.setDecorations(inlineCodeDecorationType, (inlineCodeBackgroundEnabled ? inlineCodeBlocks : []));
+		editor.setDecorations(invisibleLineBreakHighlightDecorationType, (invisibleLineBreakHighlightEnabled ? invisibleLineBreaks : []));
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
 		editor?.setDecorations(fencedCodeBlockDecorationType, []);
 		editor?.setDecorations(indentedCodeBlockDecorationType, []);
 		editor?.setDecorations(inlineCodeDecorationType, []);
+		editor?.setDecorations(invisibleLineBreakHighlightDecorationType, []);
 	}
 
 	// ***** Trigger updates of text editors *****

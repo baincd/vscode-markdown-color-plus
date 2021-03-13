@@ -66,7 +66,23 @@
 					"type": "string",
 					"default": "#0A0A0A66",
 					"markdownDescription": "CSS color for background of inline code on dark themes"
+				},
+				"markdown-color-plus.invisibleLineBreak.background.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable highlighting invisible line breaks (2 spaces at the end of a line)"
+				},
+				"markdown-color-plus.invisibleLineBreak.background.lightThemeColor": {
+					"type": "string",
+					"default": "#FFE4C488",
+					"markdownDescription": "CSS color for invisible line breaks (2 spaces at the end of a line) on light themes"
+				},
+				"markdown-color-plus.invisibleLineBreak.background.darkThemeColor": {
+					"type": "string",
+					"default": "#4169E133",
+					"markdownDescription": "CSS color for invisible line breaks (2 spaces at the end of a line) on dark themes"
 				}
+
 			}
 		}
 	},
