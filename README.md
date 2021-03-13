@@ -1,23 +1,31 @@
 # Markdown Color Plus
 
-Additional Colorization for Markdown Files, such as background color of code blocks, inline code, and invisible line breaks (2 trailing spaces)
+Additional Colorization for Markdown Files (background color of code, invisible line breaks, and current section headers)
 
 ## Features
 
 All these features can be configured or disabled
 
-### Set Background on fenced code blocks
+### Fenced Code Block Background
 
 ![fenced code block example](images/example-fenced-code-block.png)
 
-### Set Background on indented code blocks
+### Indented Code Block Background
 
 ![indented code block example](images/example-indented-code-block.png)
 
-### Set Background on inline code
+### Inline Code Background
 
 ![inline code example](images/example-inline-code.png)
 
-### Highlight invisible line breaks
+### Highlight invisible line breaks (2 trailing spaces)
 
 ![invisible line breaks example](images/example-invisible-line-breaks.png)
+
+### Highlight Current Section Headers
+
+![current section headers example](images/example-current-headers.png)
+
+#### Known Limitations
+
+* The header highlights do not refresh if you move the cursor to whitespace (making an edit or moving the cursor to text will update the header highlights)
