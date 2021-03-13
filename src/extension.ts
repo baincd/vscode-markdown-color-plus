@@ -11,6 +11,9 @@ export function activate(context: vscode.ExtensionContext) {
 	let fencedCodeBlockDecorationType: vscode.TextEditorDecorationType;
 	let indentedCodeBlockDecorationType: vscode.TextEditorDecorationType;
 	let inlineCodeDecorationType: vscode.TextEditorDecorationType;
+	let fencedCodeBlockBackgroundEnabled: boolean;
+	let indentedCodeBlockBackgroundEnabled: boolean;
+	let inlineCodeBackgroundEnabled: boolean;
 
 	function disposeAllTextDecorations() {
 		fencedCodeBlockDecorationType?.dispose();
@@ -22,18 +25,24 @@ export function activate(context: vscode.ExtensionContext) {
 		disposeAllTextDecorations();
 		let colorizerConfig = vscode.workspace.getConfiguration("markdown-color-plus");
 
+		fencedCodeBlockBackgroundEnabled = colorizerConfig.get<boolean>('fencedCodeBlock.background.enabled',false)
 		fencedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: "#CCCCCCCC",
+			light: { backgroundColor: colorizerConfig.get<string>('fencedCodeBlock.background.lightThemeColor') },
+			dark:  { backgroundColor: colorizerConfig.get<string>('fencedCodeBlock.background.darkThemeColor') },
 			isWholeLine: true
 		});
 
+		indentedCodeBlockBackgroundEnabled = colorizerConfig.get<boolean>('indentedCodeBlock.background.enabled',false)
 		indentedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: "#CCCCCCCC",
+			light: { backgroundColor: colorizerConfig.get<string>('indentedCodeBlock.background.lightThemeColor') },
+			dark:  { backgroundColor: colorizerConfig.get<string>('indentedCodeBlock.background.darkThemeColor') },
 			isWholeLine: true
 		});
 
+		inlineCodeBackgroundEnabled = colorizerConfig.get<boolean>('inlineCode.background.enabled',false)
 		inlineCodeDecorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: "#CCCCCCCC"
+			light: { backgroundColor: colorizerConfig.get<string>('inlineCode.background.lightThemeColor') },
+			dark:  { backgroundColor: colorizerConfig.get<string>('inlineCode.background.darkThemeColor') },
 		});
 	}
 
@@ -127,9 +136,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 			}
 		}
-		editor.setDecorations(fencedCodeBlockDecorationType, fencedCodeBlocks);
-		editor.setDecorations(indentedCodeBlockDecorationType, indentedCodeBlocks);
-		editor.setDecorations(inlineCodeDecorationType, inlineCodeBlocks);
+
+		editor.setDecorations(fencedCodeBlockDecorationType, (fencedCodeBlockBackgroundEnabled ? fencedCodeBlocks : []));
+		editor.setDecorations(indentedCodeBlockDecorationType, (indentedCodeBlockBackgroundEnabled ? indentedCodeBlocks : []));
+		editor.setDecorations(inlineCodeDecorationType, (inlineCodeBackgroundEnabled ? inlineCodeBlocks : []));
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {

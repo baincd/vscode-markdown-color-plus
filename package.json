@@ -22,60 +22,50 @@
 	"contributes": {
 		"configuration": {
 			"properties": {
-				"diff-lang-colorizer.header.lightThemeForegroundColor": {
-					"type": "string",
-					"default": "#EE8F00",
-					"markdownDescription": "CSS color of header line text (ex: 'diff --git...') on light themes"
+				"markdown-color-plus.fencedCodeBlock.background.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable coloring the background of fenced code blocks"
 				},
-				"diff-lang-colorizer.header.darkThemeForegroundColor": {
+				"markdown-color-plus.fencedCodeBlock.background.lightThemeColor": {
 					"type": "string",
-					"default": "#EE8F00",
-					"description": "CSS color of header line text (ex: 'diff --git...') on dark themes"
+					"default": "#DCDCDC66",
+					"markdownDescription": "CSS color for background of fenced code blocks on light themes"
 				},
-				"diff-lang-colorizer.header.fontWeight": {
+				"markdown-color-plus.fencedCodeBlock.background.darkThemeColor": {
 					"type": "string",
-					"default": "bold",
-					"description": "CSS font-weight of header line text (ex: 'diff --git...')"
+					"default": "#0A0A0A66",
+					"markdownDescription": "CSS color for background of fenced code blocks on dark themes"
 				},
-				"diff-lang-colorizer.header.fontStyle": {
-					"type": "string",
-					"default": "normal",
-					"description": "CSS font-style of header line text (ex: 'diff --git...')"
+				"markdown-color-plus.indentedCodeBlock.background.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable coloring the background of indented code blocks"
 				},
-				"diff-lang-colorizer.range.lightThemeForegroundColor": {
+				"markdown-color-plus.indentedCodeBlock.background.lightThemeColor": {
 					"type": "string",
-					"default": "#EE8F00",
-					"description": "CSS color of hunk range text (ex: '@@ -20,7 +20,7 @@') on light themes"
+					"default": "#DCDCDC66",
+					"markdownDescription": "CSS color for background of indented code blocks on light themes"
 				},
-				"diff-lang-colorizer.range.darkThemeForegroundColor": {
+				"markdown-color-plus.indentedCodeBlock.background.darkThemeColor": {
 					"type": "string",
-					"default": "#EE8F00",
-					"description": "CSS color of hunk range text (ex: '@@ -20,7 +20,7 @@') on dark themes"
+					"default": "#0A0A0A66",
+					"markdownDescription": "CSS color for background of indented code blocks on dark themes"
 				},
-				"diff-lang-colorizer.range.fontWeight": {
-					"type": "string",
-					"default": "normal",
-					"description": "CSS font-weight of hunk range text (ex: '@@ -20,7 +20,7 @@')"
+				"markdown-color-plus.inlineCode.background.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable coloring the background of inline code"
 				},
-				"diff-lang-colorizer.range.fontStyle": {
+				"markdown-color-plus.inlineCode.background.lightThemeColor": {
 					"type": "string",
-					"default": "italic",
-					"description": "CSS font-style of hunk range text (ex: '@@ -20,7 +20,7 @@')"
+					"default": "#DCDCDC66",
+					"markdownDescription": "CSS color for background of inline code on light themes"
 				},
-				"diff-lang-colorizer.extendedHeader.fontWeight": {
+				"markdown-color-plus.inlineCode.background.darkThemeColor": {
 					"type": "string",
-					"default": "normal",
-					"description": "CSS font-weight of extended header (lines between header line and hunk range)"
-				},
-				"diff-lang-colorizer.extendedHeader.fontStyle": {
-					"type": "string",
-					"default": "italic",
-					"description": "CSS font-style of extended header (lines between header line and hunk range)"
-				},
-				"diff-lang-colorizer.extendedHeader.opacity": {
-					"type": "string",
-					"default": "0.7",
-					"description": "CSS opacity of extended header (lines between header line and hunk range)"
+					"default": "#0A0A0A66",
+					"markdownDescription": "CSS color for background of inline code on dark themes"
 				}
 			}
 		}
