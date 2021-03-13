@@ -9,21 +9,25 @@ export function activate(context: vscode.ExtensionContext) {
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationOptions
 	let fencedCodeBlockDecorationType: vscode.TextEditorDecorationType;
+	let inlineCodeDecorationType: vscode.TextEditorDecorationType;
 
 	function disposeAllTextDecorations() {
 		fencedCodeBlockDecorationType?.dispose();
+		inlineCodeDecorationType?.dispose();
 	}
 
 	function handleUpdatedConfig() {
 		disposeAllTextDecorations();
 		let colorizerConfig = vscode.workspace.getConfiguration("markdown-color-plus");
 
-
 		fencedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
 			backgroundColor: "#CCCCCCCC",
 			isWholeLine: true
 		});
 
+		inlineCodeDecorationType = vscode.window.createTextEditorDecorationType({
+			backgroundColor: "#CCCCCCCC"
+		});
 	}
 
 	handleUpdatedConfig();
@@ -41,6 +45,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const codeBlockRegEx = /^([ ]{4}|\\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
 
+	const inlineCodeRegEx = /`[^`]*`/g
+
 	const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
 	const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
 	const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
@@ -51,6 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		const fencedCodeBlocks: vscode.DecorationOptions[] = [];
+		const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 
 		let doc = editor.document;
 		let match: RegExpMatchArray | null = null;5
@@ -89,13 +96,27 @@ export function activate(context: vscode.ExtensionContext) {
 					let endLine = --lineIdx;
 					fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 				}
+			} else {
+				let searchFrom = 0;
+				let startIdx : number
+				while ((startIdx = line.text.indexOf("`", searchFrom)) > -1) {
+					searchFrom = startIdx + 1;
+					let endIdx
+					if ((endIdx = line.text.indexOf("`",searchFrom)) > -1) {
+						inlineCodeBlocks.push({range: new vscode.Range(lineIdx,startIdx + 1,lineIdx, endIdx)});
+						searchFrom = endIdx + 1;
+					}
+				}
+
 			}
 		}
 		editor.setDecorations(fencedCodeBlockDecorationType, fencedCodeBlocks);
+		editor.setDecorations(inlineCodeDecorationType, inlineCodeBlocks);
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
 		editor?.setDecorations(fencedCodeBlockDecorationType, []);
+		editor?.setDecorations(inlineCodeDecorationType, []);
 	}
 
 	// ***** Trigger updates of text editors *****
