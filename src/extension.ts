@@ -3,52 +3,27 @@ import * as vscode from 'vscode';
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
 
-	// console.log('diff-lang-colorizer activated');
+	// console.log('markdown-color-plus');
 
 	// ***** Read config and manage text decorations *****
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationOptions
-	let headerDecorationType: vscode.TextEditorDecorationType;
-	let rangeDecorationType: vscode.TextEditorDecorationType;
-	let extendedHeaderDecorationType: vscode.TextEditorDecorationType;
+	let fencedCodeBlockDecorationType: vscode.TextEditorDecorationType;
 
 	function disposeAllTextDecorations() {
-		headerDecorationType?.dispose();
-		rangeDecorationType?.dispose();
-		extendedHeaderDecorationType?.dispose();
+		fencedCodeBlockDecorationType?.dispose();
 	}
 
 	function handleUpdatedConfig() {
 		disposeAllTextDecorations();
-		let colorizerConfig = vscode.workspace.getConfiguration("diff-lang-colorizer");
+		let colorizerConfig = vscode.workspace.getConfiguration("markdown-color-plus");
 
-		headerDecorationType = vscode.window.createTextEditorDecorationType({
-			fontWeight: colorizerConfig.get<string>('header.fontWeight'),
-			fontStyle:  colorizerConfig.get<string>('header.fontStyle'),
-			light: {
-				color: colorizerConfig.get<string>('header.lightThemeForegroundColor')
-			},
-			dark: {
-				color: colorizerConfig.get<string>('header.darkThemeForegroundColor')
-			},
+
+		fencedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
+			backgroundColor: "#777777",
+			isWholeLine: true
 		});
 
-		rangeDecorationType = vscode.window.createTextEditorDecorationType({
-			fontWeight: colorizerConfig.get<string>('range.fontWeight'),
-			fontStyle:  colorizerConfig.get<string>('range.fontStyle'),
-			light: {
-				color: colorizerConfig.get<string>('range.lightThemeForegroundColor')
-			},
-			dark: {
-				color: colorizerConfig.get<string>('range.darkThemeForegroundColor')
-			},
-		});
-
-		extendedHeaderDecorationType = vscode.window.createTextEditorDecorationType({
-			fontWeight: colorizerConfig.get<string>('extendedHeader.fontWeight'),
-			fontStyle:  colorizerConfig.get<string>('extendedHeader.fontStyle'),
-			opacity: colorizerConfig.get<string>('extendedHeader.opacity')
-		});
 	}
 
 	handleUpdatedConfig();
@@ -59,50 +34,44 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.visibleTextEditors.forEach(e => updateDecorationsOnEditor(e));
 	}
 
-	// Regexs based on https://github.com/microsoft/vscode/blob/main/extensions/git/syntaxes/diff.tmLanguage.json
-	// const HeaderGitRegEx = /^diff --git a\/.*$/; // Git RegEx isn't necessary - HeaderCmdRegEx will cover it
-	const HeaderCmdRegEx = /^diff (-|\S+\s+\S+).*$/
-	const rangeNormalRegEx = /^\d+(,\d+)*(a|d|c)\d+(,\d+)*$/
-	const rangeUnifiedRegEx = /^(@@)\s*(.+?)\s*(@@)/
-	const rangeContextRegEx = /^(((\-{3}) .+ (\-{4}))|((\*{3}) .+ (\*{4})))$/
+
+	// RegExs based on https://github.com/microsoft/vscode/blob/a699ffaee62010c4634d301da2bbdb7646b8d1da/extensions/markdown-basics/syntaxes/markdown.tmLanguage.json
+	const fencedCodeBlockStartRegEx = /^(\s*)(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
+	const fencedCodeBlockEndRegExStr = "^({MATCH1}|\\s{0,3})({MATCH2})\\s*$" // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
 
 	function updateDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		if (editor?.document.languageId != 'diff') {
+		if (editor?.document.languageId != 'markdown') {
 			return;
 		}
 
-		const headers: vscode.DecorationOptions[] = [];
-		const ranges: vscode.DecorationOptions[] = [];
-		const extHeaders: vscode.DecorationOptions[] = [];
+		const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 
 		let doc = editor.document;
-		let match: RegExpMatchArray | null = null;
-		let lineIdx;
-		let inExtHeader = false;
-		for (lineIdx = 0; lineIdx < doc.lineCount; lineIdx++) {
+		let match: RegExpMatchArray | null = null;5
+		let lineIdx = -1;
+		while (++lineIdx < doc.lineCount) {
 			let line = doc.lineAt(lineIdx);
-			if (HeaderCmdRegEx.test(line.text)) {
-				headers.push({ range: line.range });
-				inExtHeader = true;
-			} else if ( (match = rangeUnifiedRegEx.exec(line.text))) {
-				ranges.push({ range: new vscode.Range(lineIdx, 0, lineIdx, match[0].length) });
-				inExtHeader = false;
-			} else if (rangeNormalRegEx.test(line.text) ||  rangeContextRegEx.test(line.text)) {
-				ranges.push({ range: line.range });
-				inExtHeader = false;
-			} else if (inExtHeader) {
-				extHeaders.push({ range: line.range });
+			if (match = line.text.match(fencedCodeBlockStartRegEx)) {
+				let startLine = lineIdx + 1;
+				let fencedCodeBlockEndRegEx = new RegExp(fencedCodeBlockEndRegExStr.replace("{MATCH1}",match[1]).replace("{MATCH2}",match[2]));
+				let endLine = 0;
+				while (endLine == 0 && ++lineIdx < doc.lineCount) {
+					line = doc.lineAt(lineIdx);
+					if (line.text.match(fencedCodeBlockEndRegEx)) {
+						endLine = lineIdx - 1;
+					}
+				}
+				if (endLine == 0) {
+					endLine = doc.lineCount - 1;
+				}
+				fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 			}
 		}
-		editor.setDecorations(headerDecorationType, headers);
-		editor.setDecorations(rangeDecorationType, ranges);
-		editor.setDecorations(extendedHeaderDecorationType, extHeaders);
+		editor.setDecorations(fencedCodeBlockDecorationType, fencedCodeBlocks);
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		editor?.setDecorations(headerDecorationType, []);
-		editor?.setDecorations(rangeDecorationType, []);
-		editor?.setDecorations(extendedHeaderDecorationType, []);
+		editor?.setDecorations(fencedCodeBlockDecorationType, []);
 	}
 
 	// ***** Trigger updates of text editors *****
@@ -148,7 +117,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}, null, context.subscriptions);
 
 	vscode.workspace.onDidOpenTextDocument(doc => {
-		if (doc.languageId != 'diff') {
+		if (doc.languageId != 'markdown') {
 			clearDecorationsOnEditor(vscode.window.activeTextEditor);
 		} else {
 			triggerUpdateActiveEditorDecorations();
