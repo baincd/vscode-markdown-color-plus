@@ -6,7 +6,7 @@ interface CancelToken {
 
 const UncancelableToken = { isCancellationRequested: false };
 
-const HeaderRegEx = /^\s*((#{1,6}) .*\S)\s*/
+const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
 const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
 
@@ -45,8 +45,8 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			let newHeaderLength: number = 0;
 			let match: RegExpMatchArray | null;
 			if ( (match = document.lineAt(currentLine).text.match(HeaderRegEx)) ) {
-				newHeaderLevel = match[2].length;
-				newHeaderLength = match[1].length;
+				newHeaderLevel = match[3].length;
+				newHeaderLength = match[1].length + match[2].length;
 			} else if ( (match = document.lineAt(currentLine).text.match(AltHeaderRegEx)) ) {
 				currentLine--
 				newHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
