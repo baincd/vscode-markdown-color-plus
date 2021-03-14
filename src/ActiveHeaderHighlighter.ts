@@ -18,6 +18,20 @@ const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_c
 
 const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/  // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 
+function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, maxLineIdxToCheck: number) {
+	let currentLineIdx = startLineIdx;
+	while (++currentLineIdx < maxLineIdxToCheck && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
+	}
+	return currentLineIdx;
+}
+
+function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel: number) {
+	while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= headerLevel) {
+		activeHeaders.pop();
+	}
+
+}
+
 
 class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvider {
 
@@ -57,8 +71,7 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			let match: RegExpMatchArray | null;
 
 			if (currentLineText.match(fencedCodeBlockStartRegEx)) {
-				while (++currentLineIdx < selectedLineIdx && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
-				}
+				currentLineIdx = findEndOfFencedCodeBlockLineIdx(document, currentLineIdx, selectedLineIdx);
 			} else if ( (match = currentLineText.match(HeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx;
 				currentHeaderLevel = match[3].length;
@@ -70,9 +83,7 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			}
 
 			if (currentHeaderLevel) {
-				while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= currentHeaderLevel) {
-					activeHeaders.pop();
-				}
+				resetHeaderLevels(activeHeaders, currentHeaderLevel);
 				if (currentLineIdx < selectedLineIdx) {
 					activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, 0, currentHeaderLineIdx, currentHeaderLength) })
 				}
