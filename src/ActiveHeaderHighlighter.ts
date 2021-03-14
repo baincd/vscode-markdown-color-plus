@@ -43,36 +43,35 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 		
 		let activeHeaders: vscode.DecorationOptions[] = [];
 
-		let currentLine = pos.line + 1;
-		let currentHeaderLevel = 7;
-		while (--currentLine > -1 && currentHeaderLevel > 0) {
-			if (document.lineAt(currentLine).text.match(fencedCodeBlockEndRegEx)) {
-				while (--currentLine > -1 && !document.lineAt(currentLine).text.match(fencedCodeBlockStartRegEx)) {
+		let currentLineIdx = pos.line + 1;
+		let prevHeaderLevel = 7;
+		while (--currentLineIdx > -1 && prevHeaderLevel > 0) {
+			let currentLineText = document.lineAt(currentLineIdx).text;
+			let currentHeaderLevel: number | null = null;
+			let currentHeaderLength: number = 0;
+			let match: RegExpMatchArray | null;
+
+			if (currentLineText.match(fencedCodeBlockEndRegEx)) {
+				while (--currentLineIdx > -1 && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockStartRegEx)) {
 				}
-				++currentLine;
-			} else if (document.lineAt(currentLine).text.match(fencedCodeBlockStartRegEx)) {
+			} else if (currentLineText.match(fencedCodeBlockStartRegEx)) {
 				// Selected line must be within a fenced code block
 				activeHeaders = [];
-				currentHeaderLevel = 7;
+				prevHeaderLevel = 7;
+			} else if ( (match = currentLineText.match(HeaderRegEx)) ) {
+				currentHeaderLevel = match[3].length;
+				currentHeaderLength = match[1].length + match[2].length;
+			} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
+				currentLineIdx--
+				currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
+				currentHeaderLength = currentLineText.trimEnd().length
 			}
 
-			let newHeaderLevel: number | null = null;
-			let newHeaderLength: number = 0;
-			let match: RegExpMatchArray | null;
-			if ( (match = document.lineAt(currentLine).text.match(HeaderRegEx)) ) {
-				newHeaderLevel = match[3].length;
-				newHeaderLength = match[1].length + match[2].length;
-			} else if ( (match = document.lineAt(currentLine).text.match(AltHeaderRegEx)) ) {
-				currentLine--
-				newHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
-				newHeaderLength = document.lineAt(currentLine).text.trimEnd().length
-			}
-
-			if (newHeaderLevel && newHeaderLevel < currentHeaderLevel) {
-				if (currentLine != pos.line) {
-					activeHeaders.push({ range: new vscode.Range(currentLine, 0, currentLine, newHeaderLength) })
+			if (currentHeaderLevel && currentHeaderLevel < prevHeaderLevel) {
+				if (currentLineIdx != pos.line) {
+					activeHeaders.push({ range: new vscode.Range(currentLineIdx, 0, currentLineIdx, currentHeaderLength) })
 				}
-				currentHeaderLevel = newHeaderLevel;
+				prevHeaderLevel = currentHeaderLevel;
 			}
 		}
 
