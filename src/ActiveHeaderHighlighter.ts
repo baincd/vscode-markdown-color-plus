@@ -67,7 +67,8 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			let currentLineText = document.lineAt(currentLineIdx).text;
 			let currentHeaderLineIdx: number = -1;
 			let currentHeaderLevel: number | null = null;
-			let currentHeaderLength: number = 0;
+			let currentHeaderStartChar: number = 0;
+			let currentHeaderEndChar: number = 0;
 			let match: RegExpMatchArray | null;
 
 			if (currentLineText.match(fencedCodeBlockStartRegEx)) {
@@ -75,17 +76,19 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			} else if ( (match = currentLineText.match(HeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx;
 				currentHeaderLevel = match[3].length;
-				currentHeaderLength = match[1].length + match[2].length;
+				currentHeaderStartChar = match[1].length;
+				currentHeaderEndChar = match[1].length + match[2].length;
 			} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx - 1;
 				currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
-				currentHeaderLength = document.lineAt(currentLineIdx).text.trimEnd().length
+				currentHeaderStartChar = 0;
+				currentHeaderEndChar = document.lineAt(currentLineIdx).text.trimEnd().length
 			}
 
 			if (currentHeaderLevel) {
 				resetHeaderLevels(activeHeaders, currentHeaderLevel);
 				if (currentLineIdx < selectedLineIdx) {
-					activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, 0, currentHeaderLineIdx, currentHeaderLength) })
+					activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, currentHeaderStartChar, currentHeaderLineIdx, currentHeaderEndChar) })
 				}
 			}
 		}
