@@ -10,6 +10,11 @@ const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
 const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
 
+const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
+
+const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/  // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
+
+
 class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvider {
 
 	activeHeaderDecorationType!: vscode.TextEditorDecorationType;
@@ -36,11 +41,21 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			return;
 		}
 		
-		const activeHeaders: vscode.DecorationOptions[] = [];
+		let activeHeaders: vscode.DecorationOptions[] = [];
 
 		let currentLine = pos.line + 1;
 		let currentHeaderLevel = 7;
 		while (--currentLine > -1 && currentHeaderLevel > 0) {
+			if (document.lineAt(currentLine).text.match(fencedCodeBlockEndRegEx)) {
+				while (--currentLine > -1 && !document.lineAt(currentLine).text.match(fencedCodeBlockStartRegEx)) {
+				}
+				++currentLine;
+			} else if (document.lineAt(currentLine).text.match(fencedCodeBlockStartRegEx)) {
+				// Selected line must be within a fenced code block
+				activeHeaders = [];
+				currentHeaderLevel = 7;
+			}
+
 			let newHeaderLevel: number | null = null;
 			let newHeaderLength: number = 0;
 			let match: RegExpMatchArray | null;
