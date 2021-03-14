@@ -4,6 +4,10 @@ interface CancelToken {
 	isCancellationRequested: boolean
 }
 
+interface HeaderDecorationOptions extends vscode.DecorationOptions {
+	headerLevel: number
+}
+
 const UncancelableToken = { isCancellationRequested: false };
 
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
@@ -41,37 +45,37 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			return;
 		}
 		
-		let activeHeaders: vscode.DecorationOptions[] = [];
+		let activeHeaders: HeaderDecorationOptions[] = [];
+		const selectedLineIdx = pos.line;
 
-		let currentLineIdx = pos.line + 1;
-		let prevHeaderLevel = 7;
-		while (--currentLineIdx > -1 && prevHeaderLevel > 0) {
+		let currentLineIdx = -1;
+		while (++currentLineIdx <= selectedLineIdx) {
 			let currentLineText = document.lineAt(currentLineIdx).text;
+			let currentHeaderLineIdx: number = -1;
 			let currentHeaderLevel: number | null = null;
 			let currentHeaderLength: number = 0;
 			let match: RegExpMatchArray | null;
 
-			if (currentLineText.match(fencedCodeBlockEndRegEx)) {
-				while (--currentLineIdx > -1 && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockStartRegEx)) {
+			if (currentLineText.match(fencedCodeBlockStartRegEx)) {
+				while (++currentLineIdx < selectedLineIdx && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
 				}
-			} else if (currentLineText.match(fencedCodeBlockStartRegEx)) {
-				// Selected line must be within a fenced code block
-				activeHeaders = [];
-				prevHeaderLevel = 7;
 			} else if ( (match = currentLineText.match(HeaderRegEx)) ) {
+				currentHeaderLineIdx = currentLineIdx;
 				currentHeaderLevel = match[3].length;
 				currentHeaderLength = match[1].length + match[2].length;
 			} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
-				currentLineIdx--
+				currentHeaderLineIdx = currentLineIdx - 1;
 				currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
-				currentHeaderLength = currentLineText.trimEnd().length
+				currentHeaderLength = document.lineAt(currentLineIdx).text.trimEnd().length
 			}
 
-			if (currentHeaderLevel && currentHeaderLevel < prevHeaderLevel) {
-				if (currentLineIdx != pos.line) {
-					activeHeaders.push({ range: new vscode.Range(currentLineIdx, 0, currentLineIdx, currentHeaderLength) })
+			if (currentHeaderLevel) {
+				while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= currentHeaderLevel) {
+					activeHeaders.pop();
 				}
-				prevHeaderLevel = currentHeaderLevel;
+				if (currentLineIdx < selectedLineIdx) {
+					activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, 0, currentHeaderLineIdx, currentHeaderLength) })
+				}
 			}
 		}
 
