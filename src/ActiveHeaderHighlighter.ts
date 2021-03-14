@@ -1,14 +1,13 @@
 import * as vscode from 'vscode';
 
-interface CancelToken {
+interface TextDocumentCancelToken {
 	isCancellationRequested: boolean
+	document?: vscode.TextDocument;
 }
 
 interface HeaderDecorationOptions extends vscode.DecorationOptions {
 	headerLevel: number
 }
-
-const UncancelableToken = { isCancellationRequested: false };
 
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
@@ -18,9 +17,9 @@ const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_c
 
 const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/  // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 
-function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, maxLineIdxToCheck: number) {
+function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, maxLineIdxToCheck: number, token: TextDocumentCancelToken) {
 	let currentLineIdx = startLineIdx;
-	while (++currentLineIdx < maxLineIdxToCheck && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
+	while (!token.isCancellationRequested && ++currentLineIdx < maxLineIdxToCheck && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
 	}
 	return currentLineIdx;
 }
@@ -32,11 +31,12 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
-
 class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvider {
 
 	activeHeaderDecorationType!: vscode.TextEditorDecorationType;
 	activeHeaderHighlightingEnabled: boolean = false;
+
+	lastTextDocChangeCancellationToken: TextDocumentCancelToken = { isCancellationRequested: true };
 
 	constructor() {
 		this.handleUpdatedConfig();
@@ -54,7 +54,7 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 
 	}
 
-	updateHighlights(document: vscode.TextDocument, pos: vscode.Position, token: CancelToken) {
+	updateHighlights(document: vscode.TextDocument, pos: vscode.Position, token: TextDocumentCancelToken) {
 		if (!this.activeHeaderHighlightingEnabled || vscode.window.activeTextEditor?.document !== document) {
 			return;
 		}
@@ -63,7 +63,7 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 		const selectedLineIdx = pos.line;
 
 		let currentLineIdx = -1;
-		while (++currentLineIdx <= selectedLineIdx) {
+		while (!token.isCancellationRequested && ++currentLineIdx <= selectedLineIdx) {
 			let currentLineText = document.lineAt(currentLineIdx).text;
 			let currentHeaderLineIdx: number = -1;
 			let currentHeaderLevel: number | null = null;
@@ -72,7 +72,7 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			let match: RegExpMatchArray | null;
 
 			if (currentLineText.match(fencedCodeBlockStartRegEx)) {
-				currentLineIdx = findEndOfFencedCodeBlockLineIdx(document, currentLineIdx, selectedLineIdx);
+				currentLineIdx = findEndOfFencedCodeBlockLineIdx(document, currentLineIdx, selectedLineIdx, token);
 			} else if ( (match = currentLineText.match(HeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx;
 				currentHeaderLevel = match[3].length;
@@ -93,7 +93,9 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			}
 		}
 
-		vscode.window.activeTextEditor.setDecorations(this.activeHeaderDecorationType, activeHeaders);
+		if (!token.isCancellationRequested) {
+			vscode.window.activeTextEditor.setDecorations(this.activeHeaderDecorationType, activeHeaders);
+		}
 	}
 	
 	clearHighlights() {
@@ -108,7 +110,14 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 
 	textDocumentChangeHandler(document: vscode.TextDocument, contentChanges: vscode.TextDocumentContentChangeEvent[]) {
 		if (contentChanges.length == 1) {
-			this.updateHighlights(document, contentChanges[0].range.start, UncancelableToken);
+			if (this.lastTextDocChangeCancellationToken.document == document) {
+				this.lastTextDocChangeCancellationToken.isCancellationRequested = true;
+			}
+			this.lastTextDocChangeCancellationToken = {
+				isCancellationRequested: false,
+				document: document
+			}
+			this.updateHighlights(document, contentChanges[0].range.start, this.lastTextDocChangeCancellationToken);
 		} else {
 			this.clearHighlights();
 		}
