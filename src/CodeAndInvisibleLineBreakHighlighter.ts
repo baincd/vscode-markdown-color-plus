@@ -1,66 +1,8 @@
 import * as vscode from 'vscode';
 
+import * as ConfigurationHandler from './ConfigurationHandler'
+
 export function activate(context: vscode.ExtensionContext) {
-
-	let activeEditorChangeUpdateDelay = 100; // Default value, overridden by config
-	let editTextChangeUpdateDelay = 100; // Default value, overridden by config
-
-
-	// ***** Read config and manage text decorations *****
-	// https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions
-	// https://code.visualstudio.com/api/references/vscode-api#DecorationOptions
-	let fencedCodeBlockDecorationType: vscode.TextEditorDecorationType;
-	let indentedCodeBlockDecorationType: vscode.TextEditorDecorationType;
-	let inlineCodeDecorationType: vscode.TextEditorDecorationType;
-	let invisibleLineBreakHighlightDecorationType: vscode.TextEditorDecorationType;
-	let fencedCodeBlockBackgroundEnabled: boolean;
-	let indentedCodeBlockBackgroundEnabled: boolean;
-	let inlineCodeBackgroundEnabled: boolean;
-	let invisibleLineBreakHighlightEnabled: boolean;
-
-	function disposeAllTextDecorations() {
-		fencedCodeBlockDecorationType?.dispose();
-		indentedCodeBlockDecorationType?.dispose();
-		inlineCodeDecorationType?.dispose();
-		invisibleLineBreakHighlightDecorationType?.dispose();
-	}
-
-	function handleUpdatedConfig() {
-		disposeAllTextDecorations();
-		let colorizerConfig = vscode.workspace.getConfiguration("markdown-color-plus");
-
-		fencedCodeBlockBackgroundEnabled = colorizerConfig.get<boolean>('fencedCodeBlock.background.enabled',false)
-		fencedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
-			light: { backgroundColor: colorizerConfig.get<string>('fencedCodeBlock.background.lightThemeColor') },
-			dark:  { backgroundColor: colorizerConfig.get<string>('fencedCodeBlock.background.darkThemeColor') },
-			isWholeLine: true
-		});
-
-		indentedCodeBlockBackgroundEnabled = colorizerConfig.get<boolean>('indentedCodeBlock.background.enabled',false)
-		indentedCodeBlockDecorationType = vscode.window.createTextEditorDecorationType({
-			light: { backgroundColor: colorizerConfig.get<string>('indentedCodeBlock.background.lightThemeColor') },
-			dark:  { backgroundColor: colorizerConfig.get<string>('indentedCodeBlock.background.darkThemeColor') },
-			isWholeLine: true
-		});
-
-		inlineCodeBackgroundEnabled = colorizerConfig.get<boolean>('inlineCode.background.enabled',false)
-		inlineCodeDecorationType = vscode.window.createTextEditorDecorationType({
-			light: { backgroundColor: colorizerConfig.get<string>('inlineCode.background.lightThemeColor') },
-			dark:  { backgroundColor: colorizerConfig.get<string>('inlineCode.background.darkThemeColor') },
-		});
-
-		invisibleLineBreakHighlightEnabled = colorizerConfig.get<boolean>('invisibleLineBreak.background.enabled',false)
-		invisibleLineBreakHighlightDecorationType = vscode.window.createTextEditorDecorationType({
-			light: { backgroundColor: colorizerConfig.get<string>('invisibleLineBreak.background.lightThemeColor') },
-			dark:  { backgroundColor: colorizerConfig.get<string>('invisibleLineBreak.background.darkThemeColor') },
-		});
-
-		activeEditorChangeUpdateDelay = colorizerConfig.get<number>("delays.activeEditorChanged",100);
-		editTextChangeUpdateDelay = colorizerConfig.get<number>("delays.editTextChanged",100);
-
-	}
-
-	handleUpdatedConfig();
 
 	// ***** Decorate diff Text Editors *****
 
@@ -159,17 +101,21 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
-		editor.setDecorations(fencedCodeBlockDecorationType, (fencedCodeBlockBackgroundEnabled ? fencedCodeBlocks : []));
-		editor.setDecorations(indentedCodeBlockDecorationType, (indentedCodeBlockBackgroundEnabled ? indentedCodeBlocks : []));
-		editor.setDecorations(inlineCodeDecorationType, (inlineCodeBackgroundEnabled ? inlineCodeBlocks : []));
-		editor.setDecorations(invisibleLineBreakHighlightDecorationType, (invisibleLineBreakHighlightEnabled ? invisibleLineBreaks : []));
+		setEditorDecorations(editor, ConfigurationHandler.config.fencedCodeBlock,    fencedCodeBlocks   );
+		setEditorDecorations(editor, ConfigurationHandler.config.indentedCodeBlock,  indentedCodeBlocks );
+		setEditorDecorations(editor, ConfigurationHandler.config.inlineCode,         inlineCodeBlocks   );
+		setEditorDecorations(editor, ConfigurationHandler.config.invisibleLineBreak, invisibleLineBreaks);
+	}
+
+	function setEditorDecorations(editor: vscode.TextEditor, config: ConfigurationHandler.ExtensionFeatureConfig, ranges: vscode.DecorationOptions[]) {
+		editor?.setDecorations(config.decorationType, (config.enabled ? ranges : []));
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		editor?.setDecorations(fencedCodeBlockDecorationType, []);
-		editor?.setDecorations(indentedCodeBlockDecorationType, []);
-		editor?.setDecorations(inlineCodeDecorationType, []);
-		editor?.setDecorations(invisibleLineBreakHighlightDecorationType, []);
+		editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
+		editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,  []);
+		editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,         []);
+		editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType, []);
 	}
 
 	// ***** Trigger updates of text editors *****
@@ -190,7 +136,7 @@ export function activate(context: vscode.ExtensionContext) {
 			clearTimeout(updateAllEditorsTimeout);
 			updateAllEditorsTimeout = undefined;
 		}
-		updateAllEditorsTimeout = setTimeout(updateDecorationsOnAllVisibleEditors, activeEditorChangeUpdateDelay);
+		updateAllEditorsTimeout = setTimeout(updateDecorationsOnAllVisibleEditors, ConfigurationHandler.config.activeEditorChangeUpdateDelay);
 	}
 
 	triggerUpdateAllEditorsDecorations();
@@ -209,7 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.workspace.onDidChangeTextDocument(event => {
 		if (vscode.window.activeTextEditor && event.document === vscode.window.activeTextEditor.document) {
-			triggerUpdateActiveEditorDecorations(editTextChangeUpdateDelay);
+			triggerUpdateActiveEditorDecorations(ConfigurationHandler.config.editTextChangeUpdateDelay);
 		}
 	}, null, context.subscriptions);
 
@@ -217,19 +163,20 @@ export function activate(context: vscode.ExtensionContext) {
 		if (doc.languageId != 'markdown') {
 			clearDecorationsOnEditor(vscode.window.activeTextEditor);
 		} else {
-			triggerUpdateActiveEditorDecorations(activeEditorChangeUpdateDelay);
+			triggerUpdateActiveEditorDecorations(ConfigurationHandler.config.activeEditorChangeUpdateDelay);
 		}
 	}, null, context.subscriptions)
 	
 	vscode.workspace.onDidChangeConfiguration(e => {
-		handleUpdatedConfig();
+		ConfigurationHandler.resetAllDecorations();
+		ConfigurationHandler.readConfig();
 		triggerUpdateAllEditorsDecorations();	
 	}, null, context.subscriptions)
 
 	// ***** Cleanup *****
 
 	context.subscriptions.push({
-		dispose: disposeAllTextDecorations
+		dispose: ConfigurationHandler.resetAllDecorations
 	});
 }
 

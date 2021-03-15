@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 
+import * as ConfigurationHandler from './ConfigurationHandler'
+
 interface TextDocumentCancelToken {
 	isCancellationRequested: boolean
 	document?: vscode.TextDocument;
@@ -33,29 +35,10 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvider {
 
-	activeHeaderDecorationType!: vscode.TextEditorDecorationType;
-	activeHeaderHighlightingEnabled: boolean = false;
-
 	lastTextDocChangeCancellationToken: TextDocumentCancelToken = { isCancellationRequested: true };
 
-	constructor() {
-		this.handleUpdatedConfig();
-	}
-
-	handleUpdatedConfig() {
-		this.activeHeaderDecorationType?.dispose();
-
-		let colorizerConfig = vscode.workspace.getConfiguration("markdown-color-plus");
-		this.activeHeaderHighlightingEnabled = colorizerConfig.get<boolean>('currentHeaders.background.enabled',false)
-		this.activeHeaderDecorationType = vscode.window.createTextEditorDecorationType({
-			light: { backgroundColor: colorizerConfig.get<string>('currentHeaders.background.lightThemeColor') },
-			dark:  { backgroundColor: colorizerConfig.get<string>('currentHeaders.background.darkThemeColor') }
-		});
-
-	}
-
 	updateHighlights(document: vscode.TextDocument, pos: vscode.Position, token: TextDocumentCancelToken) {
-		if (!this.activeHeaderHighlightingEnabled || vscode.window.activeTextEditor?.document !== document) {
+		if (!ConfigurationHandler.config.activeHeader.enabled || vscode.window.activeTextEditor?.document !== document) {
 			return;
 		}
 		
@@ -94,12 +77,12 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 		}
 
 		if (!token.isCancellationRequested) {
-			vscode.window.activeTextEditor.setDecorations(this.activeHeaderDecorationType, activeHeaders);
+			vscode.window.activeTextEditor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, activeHeaders);
 		}
 	}
 	
 	clearHighlights() {
-		vscode.window.activeTextEditor?.setDecorations(this.activeHeaderDecorationType, []);
+		vscode.window.activeTextEditor?.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 	}
 	
 
@@ -145,7 +128,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(e => {
-			activeHeaderHighlighter.handleUpdatedConfig();
+			ConfigurationHandler.resetAllDecorations();
+			ConfigurationHandler.readConfig();
 		})
 	);
 
