@@ -2,87 +2,19 @@ import * as vscode from 'vscode';
 
 import * as ConfigurationHandler from './ConfigurationHandler'
 
-interface TextDocumentCancelToken {
-	isCancellationRequested: boolean
-	document?: vscode.TextDocument;
-}
+import * as Decorator from './Decorator'
 
-interface HeaderDecorationOptions extends vscode.DecorationOptions {
-	headerLevel: number
-}
-
-const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
-
-const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
-
-const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
-
-const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/  // Based on fenced_code_block_unknown "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
-
-function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, maxLineIdxToCheck: number, token: TextDocumentCancelToken) {
-	let currentLineIdx = startLineIdx;
-	while (!token.isCancellationRequested && ++currentLineIdx < maxLineIdxToCheck && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
-	}
-	return currentLineIdx;
-}
-
-function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel: number) {
-	while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= headerLevel) {
-		activeHeaders.pop();
-	}
-
-}
 
 class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvider {
 
-	lastTextDocChangeCancellationToken: TextDocumentCancelToken = { isCancellationRequested: true };
+	lastTextDocChangeCancellationToken: Decorator.TextDocumentCancelToken = { isCancellationRequested: true };
 
-	updateHighlights(document: vscode.TextDocument, pos: vscode.Position, token: TextDocumentCancelToken) {
+	updateHighlights(document: vscode.TextDocument, pos: vscode.Position, token: Decorator.TextDocumentCancelToken) {
 		if (!ConfigurationHandler.config.activeHeader.enabled || vscode.window.activeTextEditor?.document !== document) {
 			return;
 		}
-		
-		let activeHeaders: HeaderDecorationOptions[] = [];
-		const selectedLineIdx = pos.line;
 
-		let currentLineIdx = -1;
-		while (!token.isCancellationRequested && ++currentLineIdx <= selectedLineIdx) {
-			let currentLineText = document.lineAt(currentLineIdx).text;
-			let currentHeaderLineIdx: number = -1;
-			let currentHeaderLevel: number | null = null;
-			let currentHeaderStartChar: number = 0;
-			let currentHeaderEndChar: number = 0;
-			let match: RegExpMatchArray | null;
-
-			if (currentLineText.match(fencedCodeBlockStartRegEx)) {
-				currentLineIdx = findEndOfFencedCodeBlockLineIdx(document, currentLineIdx, selectedLineIdx, token);
-			} else if ( (match = currentLineText.match(HeaderRegEx)) ) {
-				currentHeaderLineIdx = currentLineIdx;
-				currentHeaderLevel = match[3].length;
-				currentHeaderStartChar = match[1].length;
-				currentHeaderEndChar = match[1].length + match[2].length;
-			} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
-				currentHeaderLineIdx = currentLineIdx - 1;
-				currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
-				currentHeaderStartChar = 0;
-				currentHeaderEndChar = document.lineAt(currentLineIdx).text.trimEnd().length
-			}
-
-			if (currentHeaderLevel) {
-				resetHeaderLevels(activeHeaders, currentHeaderLevel);
-				if (currentLineIdx < selectedLineIdx) {
-					activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, currentHeaderStartChar, currentHeaderLineIdx, currentHeaderEndChar) })
-				}
-			}
-		}
-
-		if (!token.isCancellationRequested) {
-			vscode.window.activeTextEditor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, activeHeaders);
-		}
-	}
-	
-	clearHighlights() {
-		vscode.window.activeTextEditor?.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
+		Decorator.updateDecorations(vscode.window.activeTextEditor, pos, token);
 	}
 	
 
@@ -102,7 +34,9 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 			}
 			this.updateHighlights(document, contentChanges[0].range.start, this.lastTextDocChangeCancellationToken);
 		} else {
-			this.clearHighlights();
+			if (vscode.window.activeTextEditor?.document === document) {
+				Decorator.clearDecorations(vscode.window.activeTextEditor);
+			}
 		}
 	}
 }
