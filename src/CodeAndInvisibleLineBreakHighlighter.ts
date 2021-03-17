@@ -2,6 +2,10 @@ import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
 
+	let activeEditorChangeUpdateDelay = 100; // Default value, overridden by config
+	let editTextChangeUpdateDelay = 100; // Default value, overridden by config
+
+
 	// ***** Read config and manage text decorations *****
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationRenderOptions
 	// https://code.visualstudio.com/api/references/vscode-api#DecorationOptions
@@ -50,6 +54,10 @@ export function activate(context: vscode.ExtensionContext) {
 			light: { backgroundColor: colorizerConfig.get<string>('invisibleLineBreak.background.lightThemeColor') },
 			dark:  { backgroundColor: colorizerConfig.get<string>('invisibleLineBreak.background.darkThemeColor') },
 		});
+
+		activeEditorChangeUpdateDelay = colorizerConfig.get<number>("delays.activeEditorChanged",100);
+		editTextChangeUpdateDelay = colorizerConfig.get<number>("delays.editTextChanged",100);
+
 	}
 
 	handleUpdatedConfig();
@@ -169,13 +177,12 @@ export function activate(context: vscode.ExtensionContext) {
 	let updateActiveEditorTimeout: NodeJS.Timer | undefined = undefined;
 	let updateAllEditorsTimeout: NodeJS.Timer | undefined = undefined;
 
-
-	function triggerUpdateActiveEditorDecorations() {
+	function triggerUpdateActiveEditorDecorations(delay: number) {
 		if (updateActiveEditorTimeout) {
 			clearTimeout(updateActiveEditorTimeout);
 			updateActiveEditorTimeout = undefined;
 		}
-		updateActiveEditorTimeout = setTimeout(() => updateDecorationsOnEditor(vscode.window.activeTextEditor), 100);
+		updateActiveEditorTimeout = setTimeout(() => updateDecorationsOnEditor(vscode.window.activeTextEditor), delay);
 	}
 
 	function triggerUpdateAllEditorsDecorations() {
@@ -183,7 +190,7 @@ export function activate(context: vscode.ExtensionContext) {
 			clearTimeout(updateAllEditorsTimeout);
 			updateAllEditorsTimeout = undefined;
 		}
-		updateAllEditorsTimeout = setTimeout(updateDecorationsOnAllVisibleEditors, 100);
+		updateAllEditorsTimeout = setTimeout(updateDecorationsOnAllVisibleEditors, activeEditorChangeUpdateDelay);
 	}
 
 	triggerUpdateAllEditorsDecorations();
@@ -192,7 +199,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// vscode.window.onDidChangeActiveTextEditor(editor => {
 	// 	if (editor) {
-	// 		triggerUpdateActiveEditorDecorations();
+	// 		triggerUpdateActiveEditorDecorations(activeEditorChangeUpdateDelay);
 	// 	}
 	// }, null, context.subscriptions);
 
@@ -202,7 +209,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.workspace.onDidChangeTextDocument(event => {
 		if (vscode.window.activeTextEditor && event.document === vscode.window.activeTextEditor.document) {
-			triggerUpdateActiveEditorDecorations();
+			triggerUpdateActiveEditorDecorations(editTextChangeUpdateDelay);
 		}
 	}, null, context.subscriptions);
 
@@ -210,7 +217,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (doc.languageId != 'markdown') {
 			clearDecorationsOnEditor(vscode.window.activeTextEditor);
 		} else {
-			triggerUpdateActiveEditorDecorations();
+			triggerUpdateActiveEditorDecorations(activeEditorChangeUpdateDelay);
 		}
 	}, null, context.subscriptions)
 	

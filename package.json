@@ -96,6 +96,16 @@
 					"type": "string",
 					"default": "#8A2BE240",
 					"markdownDescription": "CSS color of headers for current cursor position on dark themes"
+				},
+				"markdown-color-plus.delays.activeEditorChanged": {
+					"type": "integer",
+					"default": 100,
+					"markdownDescription": "MS delay between a change in which editor is active and updating background colors.\n\nIf experiencing issues with the editor background colors not being set or disappearing shortly after an editor is made visible, increasing this delay should help."
+				},
+				"markdown-color-plus.delays.editTextChanged": {
+					"type": "integer",
+					"default": 100,
+					"markdownDescription": "MS delay between changing text in a document and updating background colors.\n\nIncreasing this delay will reduce how often the extension loops through the document to update background colors, which could be beneficial if you work on very large markdown documents or have a slower workstation "
 				}
 			}
 		}
