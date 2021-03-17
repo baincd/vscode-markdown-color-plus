@@ -26,6 +26,10 @@ All these features can be configured or disabled
 
 ![current section headers example](images/example-current-headers.png)
 
+### Additional Notes
+
+* Delays between events and setting background colors can be configured.
+
 #### Known Limitations
 
 * Due to limitations with the VS Code API, header highlights do not refresh when you move the cursor to whitespace or certain characters like `)`.  To update the header highlights, edit the document or move the cursor to another word.
