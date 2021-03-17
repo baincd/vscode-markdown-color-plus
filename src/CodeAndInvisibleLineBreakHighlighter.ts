@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 
 import * as ConfigurationHandler from './ConfigurationHandler'
 
+import * as Decorator from './Decorator'
+
 export function activate(context: vscode.ExtensionContext) {
 
 	// ***** Decorate diff Text Editors *****
@@ -10,11 +12,9 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.visibleTextEditors.forEach(e => updateDecorationsOnEditor(e));
 	}
 
-
-	// RegExs based on https://github.com/microsoft/vscode/blob/a699ffaee62010c4634d301da2bbdb7646b8d1da/extensions/markdown-basics/syntaxes/markdown.tmLanguage.json
 	const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 	const fencedCodeBlockEndRegExStr = "^\\s{0,3}({MATCH1})\\s*$" // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
-
+	
 	const indentedCodeBlockRegEx = /^([ ]{4}|\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
 
 	const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
@@ -29,7 +29,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 		const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 		const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 		const invisibleLineBreaks: vscode.DecorationOptions[] = [];
@@ -54,7 +53,6 @@ export function activate(context: vscode.ExtensionContext) {
 						endLine = doc.lineCount - 1;
 					}
 					if (startLine <= endLine) {
-						fencedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 					}
 				}
 			} else if (indentedCodeBlockRegEx.test(line.text)) {
@@ -101,10 +99,11 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
-		setEditorDecorations(editor, ConfigurationHandler.config.fencedCodeBlock,    fencedCodeBlocks   );
 		setEditorDecorations(editor, ConfigurationHandler.config.indentedCodeBlock,  indentedCodeBlocks );
 		setEditorDecorations(editor, ConfigurationHandler.config.inlineCode,         inlineCodeBlocks   );
 		setEditorDecorations(editor, ConfigurationHandler.config.invisibleLineBreak, invisibleLineBreaks);
+
+		Decorator.updateDecorations(editor, null, {isCancellationRequested: false});
 	}
 
 	function setEditorDecorations(editor: vscode.TextEditor, config: ConfigurationHandler.ExtensionFeatureConfig, ranges: vscode.DecorationOptions[]) {
@@ -112,10 +111,13 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
 		editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,  []);
 		editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,         []);
 		editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType, []);
+
+		if (editor) {
+			Decorator.clearDecorations(editor);
+		}
 	}
 
 	// ***** Trigger updates of text editors *****
