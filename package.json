@@ -3,7 +3,7 @@
 	"name": "markdown-color-plus",
 	"displayName": "Markdown Color Plus",
 	"description": "Additional Colorization for Markdown Files (background color of code, invisible line breaks, and current section headers)",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"license": "MIT",
 	"engines": {
 		"vscode": "^1.32.0"
