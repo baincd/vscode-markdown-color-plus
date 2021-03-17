@@ -15,6 +15,12 @@ export interface TextDocumentCancelToken {
 const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 const fencedCodeBlockEndRegExStr = "^\\s{0,3}({MATCH1})\\s*$" // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
 
+const indentedCodeBlockRegEx = /^([ ]{4}|\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
+
+const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
+const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
+const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
+
 
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
@@ -44,7 +50,9 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 	const selectedLineIdx = pos?.line;
 	
 	const fencedCodeBlocks: vscode.DecorationOptions[] = [];
+	const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
+	
 	let currentLineIdx = -1;
 	while (!token.isCancellationRequested && ++currentLineIdx < document.lineCount) {
 		let currentLineText = document.lineAt(currentLineIdx).text;
@@ -59,6 +67,31 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 			currentLineIdx = findEndOfFencedCodeBlockLineIdx(document, currentLineIdx, match[1], token);
 			if (codeFenceStartIdx + 1 < currentLineIdx) {
 				fencedCodeBlocks.push({range: new vscode.Range(codeFenceStartIdx+1, 0, currentLineIdx-1, document.lineAt(currentLineIdx-1).text.length)});
+			}
+		} else if (indentedCodeBlockRegEx.test(currentLineText)) {
+			let isCodeBlock: boolean;
+			if (currentLineIdx == 0) {
+				isCodeBlock = true;
+			} else {
+				let prevLineText = document.lineAt(currentLineIdx - 1).text;
+				isCodeBlock = prevLineText.trim().length == 0 
+							|| headingRegEx.test(prevLineText)
+							|| endFencedCodeBlockRegEx.test(prevLineText)
+							|| blockQuoteRegEx.test(prevLineText);
+			}
+			if (isCodeBlock) {
+				let startLine = currentLineIdx;
+				let endOfBlockFound = false;
+				let endLine = startLine;
+				while (!endOfBlockFound && ++currentLineIdx < document.lineCount) {
+					if (indentedCodeBlockRegEx.test(document.lineAt(currentLineIdx).text)) {
+						endLine = currentLineIdx;
+					} else if (document.lineAt(currentLineIdx).text.trim().length != 0) {
+						endOfBlockFound = true
+						currentLineIdx--; // set line index to previous line, so next time through loop evaluates this line
+					}	
+				}
+				indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,document.lineAt(endLine).text.length)})
 			}
 		} else {
 			if (selectedLineIdx && currentLineIdx <= selectedLineIdx) {
@@ -88,6 +121,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 		const config = ConfigurationHandler.config;
 
 		editor.setDecorations(config.fencedCodeBlock.decorationType, (config.fencedCodeBlock.enabled ? fencedCodeBlocks : []));
+		editor.setDecorations(config.indentedCodeBlock.decorationType, (config.indentedCodeBlock.enabled ? indentedCodeBlocks : []));
 		if (selectedLineIdx) {
 			editor.setDecorations(config.activeHeader.decorationType, (config.activeHeader.enabled ? activeHeaders : []));
 		}
@@ -96,5 +130,6 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 
 export function clearDecorations(editor: vscode.TextEditor) {
 	editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
+	editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }

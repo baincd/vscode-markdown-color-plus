@@ -29,7 +29,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 		const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 		const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 
@@ -78,7 +77,6 @@ export function activate(context: vscode.ExtensionContext) {
 							lineIdx--; // set line index to previous line, so next time through loop evaluates this line
 						}	
 					}
-					indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,doc.lineAt(endLine).text.length)})
 				}
 			} else {
 				let searchFrom = 0;
@@ -99,7 +97,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
-		setEditorDecorations(editor, ConfigurationHandler.config.indentedCodeBlock,  indentedCodeBlocks );
+		
 		setEditorDecorations(editor, ConfigurationHandler.config.inlineCode,         inlineCodeBlocks   );
 		setEditorDecorations(editor, ConfigurationHandler.config.invisibleLineBreak, invisibleLineBreaks);
 
@@ -111,7 +109,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,  []);
 		editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,         []);
 		editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType, []);
 
