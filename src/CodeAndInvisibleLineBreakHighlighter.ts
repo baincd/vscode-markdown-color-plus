@@ -21,15 +21,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
 	const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
 
-	const nonPlainLineRegEx = /^\s*(#{1,6} .*|={2,}|-{2,}|\s{4}.*|\t.*|\*{3,}|_{3,}|\|.*\|)\s*$/ // # Header | Header == | Header -- | indented code block spaces | indented code block tab | Horizontal Rule *** | Horizontal Rule ___ | Table-ish (start and end with pipe)
-	const invisibleLineBreakRegEx = /\s\s$/
 
 	function updateDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
 		if (editor?.document.languageId != 'markdown') {
 			return;
 		}
 
-		const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 
 		let doc = editor.document;
 		let match: RegExpMatchArray | null = null;5
@@ -79,16 +76,11 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			} else {
 
-				if (doc.lineAt(lineIdx).text.trim().length != 0 && invisibleLineBreakRegEx.test(line.text) && !nonPlainLineRegEx.test(line.text)) {
-					invisibleLineBreaks.push({range: new vscode.Range(lineIdx, line.text.length-2, lineIdx, line.text.length)});
-				}
 
 			}
 		}
 
 		
-		setEditorDecorations(editor, ConfigurationHandler.config.invisibleLineBreak, invisibleLineBreaks);
-
 		Decorator.updateDecorations(editor, null, {isCancellationRequested: false});
 	}
 
@@ -97,8 +89,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType, []);
-
 		if (editor) {
 			Decorator.clearDecorations(editor);
 		}

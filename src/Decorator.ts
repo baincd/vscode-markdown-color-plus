@@ -21,6 +21,9 @@ const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
 const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
 const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
 
+const nonPlainLineRegEx = /^\s*(#{1,6} .*|={2,}|-{2,}|\s{4}.*|\t.*|\*{3,}|_{3,}|\|.*\|)\s*$/ // # Header | Header == | Header -- | indented code block spaces | indented code block tab | Horizontal Rule *** | Horizontal Rule ___ | Table-ish (start and end with pipe)
+const invisibleLineBreakRegEx = /\s\s$/
+
 
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
@@ -52,6 +55,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 	const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 	const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 	const inlineCodeBlocks: vscode.DecorationOptions[] = [];
+	const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
 	
 	let currentLineIdx = -1;
@@ -106,6 +110,10 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 				}
 			}
 
+			if (currentLineText.trim().length != 0 && invisibleLineBreakRegEx.test(currentLineText) && !nonPlainLineRegEx.test(currentLineText)) {
+				invisibleLineBreaks.push({range: new vscode.Range(currentLineIdx, currentLineText.length-2, currentLineIdx, currentLineText.length)});
+			}
+
 			if ( (match = currentLineText.match(HeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx;
 				currentHeaderLevel = match[3].length;
@@ -136,6 +144,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 		editor.setDecorations(config.fencedCodeBlock.decorationType, (config.fencedCodeBlock.enabled ? fencedCodeBlocks : []));
 		editor.setDecorations(config.indentedCodeBlock.decorationType, (config.indentedCodeBlock.enabled ? indentedCodeBlocks : []));
 		editor.setDecorations(config.inlineCode.decorationType, (config.inlineCode.enabled ? inlineCodeBlocks : []));
+		editor.setDecorations(config.invisibleLineBreak.decorationType, (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []));
 		if (selectedLineIdx) {
 			editor.setDecorations(config.activeHeader.decorationType, (config.activeHeader.enabled ? activeHeaders : []));
 		}
@@ -146,5 +155,6 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
+	editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }
