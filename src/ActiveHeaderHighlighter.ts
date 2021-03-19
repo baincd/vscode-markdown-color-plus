@@ -60,11 +60,4 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	context.subscriptions.push(
-		vscode.workspace.onDidChangeConfiguration(e => {
-			ConfigurationHandler.resetAllDecorations();
-			ConfigurationHandler.readConfig();
-		})
-	);
-
 }
