@@ -51,6 +51,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 	
 	const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 	const indentedCodeBlocks: vscode.DecorationOptions[] = [];
+	const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
 	
 	let currentLineIdx = -1;
@@ -94,6 +95,17 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 				indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,document.lineAt(endLine).text.length)})
 			}
 		} else {
+			let searchFrom = 0;
+			let startIdx : number
+			while ((startIdx = currentLineText.indexOf("`", searchFrom)) > -1) {
+				searchFrom = startIdx + 1;
+				let endIdx
+				if ((endIdx = currentLineText.indexOf("`",searchFrom)) > -1) {
+					inlineCodeBlocks.push({range: new vscode.Range(currentLineIdx,startIdx + 1,currentLineIdx, endIdx)});
+					searchFrom = endIdx + 1;
+				}
+			}
+
 			if ( (match = currentLineText.match(HeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx;
 				currentHeaderLevel = match[3].length;
@@ -123,6 +135,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 
 		editor.setDecorations(config.fencedCodeBlock.decorationType, (config.fencedCodeBlock.enabled ? fencedCodeBlocks : []));
 		editor.setDecorations(config.indentedCodeBlock.decorationType, (config.indentedCodeBlock.enabled ? indentedCodeBlocks : []));
+		editor.setDecorations(config.inlineCode.decorationType, (config.inlineCode.enabled ? inlineCodeBlocks : []));
 		if (selectedLineIdx) {
 			editor.setDecorations(config.activeHeader.decorationType, (config.activeHeader.enabled ? activeHeaders : []));
 		}
@@ -132,5 +145,6 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 export function clearDecorations(editor: vscode.TextEditor) {
 	editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
+	editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }

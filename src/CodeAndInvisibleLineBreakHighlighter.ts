@@ -29,7 +29,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 		const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 
 		let doc = editor.document;
@@ -79,16 +78,6 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				}
 			} else {
-				let searchFrom = 0;
-				let startIdx : number
-				while ((startIdx = line.text.indexOf("`", searchFrom)) > -1) {
-					searchFrom = startIdx + 1;
-					let endIdx
-					if ((endIdx = line.text.indexOf("`",searchFrom)) > -1) {
-						inlineCodeBlocks.push({range: new vscode.Range(lineIdx,startIdx + 1,lineIdx, endIdx)});
-						searchFrom = endIdx + 1;
-					}
-				}
 
 				if (doc.lineAt(lineIdx).text.trim().length != 0 && invisibleLineBreakRegEx.test(line.text) && !nonPlainLineRegEx.test(line.text)) {
 					invisibleLineBreaks.push({range: new vscode.Range(lineIdx, line.text.length-2, lineIdx, line.text.length)});
@@ -98,7 +87,6 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		
-		setEditorDecorations(editor, ConfigurationHandler.config.inlineCode,         inlineCodeBlocks   );
 		setEditorDecorations(editor, ConfigurationHandler.config.invisibleLineBreak, invisibleLineBreaks);
 
 		Decorator.updateDecorations(editor, null, {isCancellationRequested: false});
@@ -109,7 +97,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,         []);
 		editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType, []);
 
 		if (editor) {
