@@ -4,3 +4,5 @@
 .gitignore
 tslint.json
 tsconfig.json
+out/test/**
+*.gitignored.*
