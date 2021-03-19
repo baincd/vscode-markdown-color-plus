@@ -48,7 +48,7 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
-export function updateDecorations(editor: vscode.TextEditor | undefined, pos: vscode.Position | null = null, token: TextDocumentCancelToken | undefined = undefined) {
+export function updateDecorations(editor: vscode.TextEditor | undefined, pos: vscode.Position | undefined = undefined, token: TextDocumentCancelToken | undefined = undefined) {
 	if (!editor || editor.document.languageId != 'markdown') {
 		return;
 	}
@@ -148,9 +148,7 @@ export function updateDecorations(editor: vscode.TextEditor | undefined, pos: vs
 		editor.setDecorations(config.indentedCodeBlock.decorationType, (config.indentedCodeBlock.enabled ? indentedCodeBlocks : []));
 		editor.setDecorations(config.inlineCode.decorationType, (config.inlineCode.enabled ? inlineCodeBlocks : []));
 		editor.setDecorations(config.invisibleLineBreak.decorationType, (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []));
-		if (selectedLineIdx) {
-			editor.setDecorations(config.activeHeader.decorationType, (config.activeHeader.enabled ? activeHeaders : []));
-		}
+		editor.setDecorations(config.activeHeader.decorationType, (config.activeHeader.enabled && selectedLineIdx ? activeHeaders : []));
 	}
 }
 

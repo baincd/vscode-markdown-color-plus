@@ -23,22 +23,6 @@ class ActiveHeaderHighlighterProvider implements vscode.DocumentHighlightProvide
 		return [];
 	}
 
-	textDocumentChangeHandler(document: vscode.TextDocument, contentChanges: vscode.TextDocumentContentChangeEvent[]) {
-		if (contentChanges.length == 1) {
-			if (this.lastTextDocChangeCancellationToken.document == document) {
-				this.lastTextDocChangeCancellationToken.isCancellationRequested = true;
-			}
-			this.lastTextDocChangeCancellationToken = {
-				isCancellationRequested: false,
-				document: document
-			}
-			this.updateHighlights(document, contentChanges[0].range.start, this.lastTextDocChangeCancellationToken);
-		} else {
-			if (vscode.window.activeTextEditor?.document === document) {
-				Decorator.clearDecorations(vscode.window.activeTextEditor);
-			}
-		}
-	}
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -50,14 +34,6 @@ export function activate(context: vscode.ExtensionContext) {
 			{ language: 'markdown' },
 			activeHeaderHighlighter
 		)
-	);
-
-	context.subscriptions.push(
-		vscode.workspace.onDidChangeTextDocument(event => {
-			if (event.document.languageId == 'markdown') {
-				activeHeaderHighlighter.textDocumentChangeHandler(event.document, event.contentChanges);
-			}
-		})
 	);
 
 }

@@ -7,12 +7,12 @@ import * as ActiveHeaderHighlighter from './ActiveHeaderHighlighter'
 let updateActiveEditorTimeout: NodeJS.Timer | undefined = undefined;
 let updateAllEditorsTimeout: NodeJS.Timer | undefined = undefined;
 
-function triggerUpdateActiveEditorDecorations(delay: number) {
+function triggerUpdateActiveEditorDecorations(delay: number, pos?: vscode.Position) {
 	if (updateActiveEditorTimeout) {
 		clearTimeout(updateActiveEditorTimeout);
 		updateActiveEditorTimeout = undefined;
 	}
-	updateActiveEditorTimeout = setTimeout(() => Decorator.updateDecorations(vscode.window.activeTextEditor), delay);
+	updateActiveEditorTimeout = setTimeout(() => Decorator.updateDecorations(vscode.window.activeTextEditor, pos), delay);
 }
 
 function triggerUpdateAllEditorsDecorations() {
@@ -38,8 +38,10 @@ export function activate(context: vscode.ExtensionContext) {
 	}, null, context.subscriptions);
 
 	vscode.workspace.onDidChangeTextDocument(event => {
-		if (vscode.window.activeTextEditor && event.document === vscode.window.activeTextEditor.document) {
-			triggerUpdateActiveEditorDecorations(ConfigurationHandler.config.editTextChangeUpdateDelay);
+		if (event.document === vscode.window.activeTextEditor?.document) {
+			triggerUpdateActiveEditorDecorations(
+				ConfigurationHandler.config.editTextChangeUpdateDelay,
+				event.contentChanges.length == 1 ? event.contentChanges[0].range.start : undefined);
 		}
 	}, null, context.subscriptions);
 
