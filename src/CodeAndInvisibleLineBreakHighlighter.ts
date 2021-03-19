@@ -6,26 +6,6 @@ import * as Decorator from './Decorator'
 
 export function activate(context: vscode.ExtensionContext) {
 
-	// ***** Decorate diff Text Editors *****
-
-	function updateDecorationsOnAllVisibleEditors() {
-		vscode.window.visibleTextEditors.forEach(e => updateDecorationsOnEditor(e));
-	}
-
-	function updateDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		if (editor?.document.languageId != 'markdown') {
-			return;
-		}
-
-		Decorator.updateDecorations(editor, null, {isCancellationRequested: false});
-	}
-
-	function clearDecorationsOnEditor(editor: vscode.TextEditor | undefined) {
-		if (editor) {
-			Decorator.clearDecorations(editor);
-		}
-	}
-
 	// ***** Trigger updates of text editors *****
 
 	let updateActiveEditorTimeout: NodeJS.Timer | undefined = undefined;
@@ -36,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
 			clearTimeout(updateActiveEditorTimeout);
 			updateActiveEditorTimeout = undefined;
 		}
-		updateActiveEditorTimeout = setTimeout(() => updateDecorationsOnEditor(vscode.window.activeTextEditor), delay);
+		updateActiveEditorTimeout = setTimeout(() => Decorator.updateDecorations(vscode.window.activeTextEditor), delay);
 	}
 
 	function triggerUpdateAllEditorsDecorations() {
@@ -44,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 			clearTimeout(updateAllEditorsTimeout);
 			updateAllEditorsTimeout = undefined;
 		}
-		updateAllEditorsTimeout = setTimeout(updateDecorationsOnAllVisibleEditors, ConfigurationHandler.config.activeEditorChangeUpdateDelay);
+		updateAllEditorsTimeout = setTimeout(() => vscode.window.visibleTextEditors.forEach(e => Decorator.updateDecorations(e)), ConfigurationHandler.config.activeEditorChangeUpdateDelay);
 	}
 
 	triggerUpdateAllEditorsDecorations();
@@ -69,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.workspace.onDidOpenTextDocument(doc => {
 		if (doc.languageId != 'markdown') {
-			clearDecorationsOnEditor(vscode.window.activeTextEditor);
+			Decorator.clearDecorations(vscode.window.activeTextEditor);
 		} else {
 			triggerUpdateActiveEditorDecorations(ConfigurationHandler.config.activeEditorChangeUpdateDelay);
 		}

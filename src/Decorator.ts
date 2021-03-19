@@ -33,10 +33,10 @@ const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
 const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
 
 
-function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, fenceMarker: string, token: TextDocumentCancelToken) {
+function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, fenceMarker: string, token: TextDocumentCancelToken | undefined) {
 	let fencedCodeBlockEndRegEx = new RegExp(fencedCodeBlockEndRegExStr.replace("{MATCH1}",fenceMarker));
 	let currentLineIdx = startLineIdx;
-	while (!token.isCancellationRequested && ++currentLineIdx < document.lineCount && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
+	while (!token?.isCancellationRequested && ++currentLineIdx < document.lineCount && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
 	}
 	return currentLineIdx;
 }
@@ -48,7 +48,10 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
-export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Position | null, token: TextDocumentCancelToken) {
+export function updateDecorations(editor: vscode.TextEditor | undefined, pos: vscode.Position | null = null, token: TextDocumentCancelToken | undefined = undefined) {
+	if (!editor || editor.document.languageId != 'markdown') {
+		return;
+	}
 	const document = editor.document;
 	const selectedLineIdx = pos?.line;
 	
@@ -59,7 +62,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 	const activeHeaders: HeaderDecorationOptions[] = [];
 	
 	let currentLineIdx = -1;
-	while (!token.isCancellationRequested && ++currentLineIdx < document.lineCount) {
+	while (!token?.isCancellationRequested && ++currentLineIdx < document.lineCount) {
 		let currentLineText = document.lineAt(currentLineIdx).text;
 		let currentHeaderLineIdx: number = -1;
 		let currentHeaderLevel: number | null = null;
@@ -138,7 +141,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 
 	}
 
-	if (!token.isCancellationRequested) {
+	if (!token?.isCancellationRequested) {
 		const config = ConfigurationHandler.config;
 
 		editor.setDecorations(config.fencedCodeBlock.decorationType, (config.fencedCodeBlock.enabled ? fencedCodeBlocks : []));
@@ -151,7 +154,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 	}
 }
 
-export function clearDecorations(editor: vscode.TextEditor) {
+export function clearDecorations(editor: vscode.TextEditor | undefined) {
 	editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
 	editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
