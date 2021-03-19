@@ -33,7 +33,7 @@ const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
 const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
 
 
-function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, fenceMarker: string, token: TextDocumentCancelToken | undefined) {
+function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, fenceMarker: string, token?: TextDocumentCancelToken) {
 	let fencedCodeBlockEndRegEx = new RegExp(fencedCodeBlockEndRegExStr.replace("{MATCH1}",fenceMarker));
 	let currentLineIdx = startLineIdx;
 	while (!token?.isCancellationRequested && ++currentLineIdx < document.lineCount && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
@@ -48,7 +48,7 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
-export function updateDecorations(editor: vscode.TextEditor | undefined, pos: vscode.Position | undefined = undefined, token: TextDocumentCancelToken | undefined = undefined) {
+export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Position, token?: TextDocumentCancelToken) {
 	if (!editor || editor.document.languageId != 'markdown') {
 		return;
 	}
@@ -152,10 +152,10 @@ export function updateDecorations(editor: vscode.TextEditor | undefined, pos: vs
 	}
 }
 
-export function clearDecorations(editor: vscode.TextEditor | undefined) {
-	editor?.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
-	editor?.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
-	editor?.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
-	editor?.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
-	editor?.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
+export function clearDecorations(editor: vscode.TextEditor) {
+	editor.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
+	editor.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
+	editor.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
+	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
+	editor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }

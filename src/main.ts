@@ -6,12 +6,12 @@ import * as Decorator from './Decorator'
 let updateActiveEditorTimeout: NodeJS.Timer | undefined = undefined;
 let updateAllEditorsTimeout: NodeJS.Timer | undefined = undefined;
 
-function triggerUpdateActiveEditorDecorations(delay: number, pos?: vscode.Position, token?: vscode.CancellationToken) {
+function triggerUpdateActiveEditorDecorations(editor: vscode.TextEditor, delay: number, pos?: vscode.Position, token?: vscode.CancellationToken) {
 	if (updateActiveEditorTimeout) {
 		clearTimeout(updateActiveEditorTimeout);
 		updateActiveEditorTimeout = undefined;
 	}
-	updateActiveEditorTimeout = setTimeout(() => Decorator.updateDecorations(vscode.window.activeTextEditor, pos, token), delay);
+	updateActiveEditorTimeout = setTimeout(() => Decorator.updateDecorations(editor, pos, token), delay);
 }
 
 function triggerUpdateAllEditorsDecorations() {
@@ -39,16 +39,19 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.workspace.onDidChangeTextDocument(event => {
 		if (event.document === vscode.window.activeTextEditor?.document) {
 			triggerUpdateActiveEditorDecorations(
+				vscode.window.activeTextEditor,
 				ConfigurationHandler.config.editTextChangeUpdateDelay,
 				event.contentChanges.length == 1 ? event.contentChanges[0].range.start : undefined);
 		}
 	}, null, context.subscriptions);
 	
 	vscode.workspace.onDidOpenTextDocument(doc => {
-		if (doc.languageId != 'markdown') {
-			Decorator.clearDecorations(vscode.window.activeTextEditor);
-		} else {
-			triggerUpdateActiveEditorDecorations(ConfigurationHandler.config.activeEditorChangeUpdateDelay);
+		if (doc === vscode.window.activeTextEditor?.document) {
+			if (doc.languageId != 'markdown') {
+				Decorator.clearDecorations(vscode.window.activeTextEditor);
+			} else {
+				triggerUpdateActiveEditorDecorations(vscode.window.activeTextEditor, ConfigurationHandler.config.activeEditorChangeUpdateDelay);
+			}
 		}
 	}, null, context.subscriptions)
 	
@@ -57,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 			{ language: 'markdown' },
 			{ provideDocumentHighlights: function(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken) {
 				if (document === vscode.window.activeTextEditor?.document) {
-					triggerUpdateActiveEditorDecorations(ConfigurationHandler.config.editTextChangeUpdateDelay, position, token);
+					triggerUpdateActiveEditorDecorations(vscode.window.activeTextEditor, ConfigurationHandler.config.editTextChangeUpdateDelay, position, token);
 				}
 				return [];
 			} }
