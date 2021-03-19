@@ -94,19 +94,20 @@ export function updateDecorations(editor: vscode.TextEditor, pos: vscode.Positio
 				indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,document.lineAt(endLine).text.length)})
 			}
 		} else {
-			if (selectedLineIdx && currentLineIdx <= selectedLineIdx) {
-				if ( (match = currentLineText.match(HeaderRegEx)) ) {
-					currentHeaderLineIdx = currentLineIdx;
-					currentHeaderLevel = match[3].length;
-					currentHeaderStartChar = match[1].length;
-					currentHeaderEndChar = match[1].length + match[2].length;
-				} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
-					currentHeaderLineIdx = currentLineIdx - 1;
-					currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
-					currentHeaderStartChar = 0;
-					currentHeaderEndChar = document.lineAt(currentLineIdx).text.trimRight().length
-				}
-				if (currentHeaderLevel) {
+			if ( (match = currentLineText.match(HeaderRegEx)) ) {
+				currentHeaderLineIdx = currentLineIdx;
+				currentHeaderLevel = match[3].length;
+				currentHeaderStartChar = match[1].length;
+				currentHeaderEndChar = match[1].length + match[2].length;
+			} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
+				currentHeaderLineIdx = currentLineIdx - 1;
+				currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
+				currentHeaderStartChar = 0;
+				currentHeaderEndChar = document.lineAt(currentLineIdx).text.trimRight().length
+			}
+
+			if (currentHeaderLevel) {
+				if (selectedLineIdx && currentLineIdx <= selectedLineIdx) {
 					resetHeaderLevels(activeHeaders, currentHeaderLevel);
 					if (currentLineIdx < selectedLineIdx) {
 						activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, currentHeaderStartChar, currentHeaderLineIdx, currentHeaderEndChar) })
