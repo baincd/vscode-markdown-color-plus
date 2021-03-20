@@ -11,6 +11,14 @@ export interface TextDocumentCancelToken {
 	document?: vscode.TextDocument;
 }
 
+interface DecoratedRanges {
+	fencedCodeBlocks: vscode.DecorationOptions[];
+	indentedCodeBlocks: vscode.DecorationOptions[];
+	inlineCodeBlocks: vscode.DecorationOptions[];
+	invisibleLineBreaks: vscode.DecorationOptions[];
+	activeHeaders: HeaderDecorationOptions[];
+}
+
 // RegExs based on https://github.com/microsoft/vscode/blob/a699ffaee62010c4634d301da2bbdb7646b8d1da/extensions/markdown-basics/syntaxes/markdown.tmLanguage.json
 const fencedCodeBlockStartRegEx = /^\s{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 const fencedCodeBlockEndRegExStr = "^\\s{0,3}({MATCH1})\\s*$" // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
@@ -48,7 +56,7 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
-export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Position, token?: TextDocumentCancelToken) {
+export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Position, token?: TextDocumentCancelToken): DecoratedRanges | undefined {
 	if (!editor || editor.document.languageId != 'markdown') {
 		return;
 	}
@@ -144,12 +152,22 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	if (!token?.isCancellationRequested) {
 		const config = ConfigurationHandler.config;
 
-		editor.setDecorations(config.fencedCodeBlock.decorationType, (config.fencedCodeBlock.enabled ? fencedCodeBlocks : []));
-		editor.setDecorations(config.indentedCodeBlock.decorationType, (config.indentedCodeBlock.enabled ? indentedCodeBlocks : []));
-		editor.setDecorations(config.inlineCode.decorationType, (config.inlineCode.enabled ? inlineCodeBlocks : []));
-		editor.setDecorations(config.invisibleLineBreak.decorationType, (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []));
-		editor.setDecorations(config.activeHeader.decorationType, (config.activeHeader.enabled && selectedLineIdx ? activeHeaders : []));
-	}
+		const decoratedRanges: DecoratedRanges = {
+			fencedCodeBlocks:    (config.fencedCodeBlock.enabled                 ? fencedCodeBlocks    : []),
+			indentedCodeBlocks:  (config.indentedCodeBlock.enabled               ? indentedCodeBlocks  : []),
+			inlineCodeBlocks:    (config.inlineCode.enabled                      ? inlineCodeBlocks    : []),
+			invisibleLineBreaks: (config.invisibleLineBreak.enabled              ? invisibleLineBreaks : []),
+			activeHeaders:       (config.activeHeader.enabled && selectedLineIdx ? activeHeaders       : []),
+		}
+
+		editor.setDecorations(config.fencedCodeBlock.decorationType,    decoratedRanges.fencedCodeBlocks);
+		editor.setDecorations(config.indentedCodeBlock.decorationType,  decoratedRanges.indentedCodeBlocks);
+		editor.setDecorations(config.inlineCode.decorationType,         decoratedRanges.inlineCodeBlocks);
+		editor.setDecorations(config.invisibleLineBreak.decorationType, decoratedRanges.invisibleLineBreaks);
+		editor.setDecorations(config.activeHeader.decorationType,       decoratedRanges.activeHeaders);
+
+		return decoratedRanges;
+	} 
 }
 
 export function clearDecorations(editor: vscode.TextEditor) {
