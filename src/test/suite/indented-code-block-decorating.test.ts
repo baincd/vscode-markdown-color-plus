@@ -267,6 +267,16 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(3);
 	});
 
+	it('should highlight an indented code block that immediately follows fenced code block with leading spaces and more chars', async () => {
+		const editor = await openMarkdownDocument(["```````","fenced code block", "   ``````` \t ", "    Indented line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(3);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(3);
+	});
+
 	it('should not highlight whitespace lines that follow indented code block', async () => {
 		const editor = await openMarkdownDocument(["","    Indented line (code)", "  ", "Non-Indented line", ""])
 
@@ -385,6 +395,17 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
 		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
 		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block using tab when starts with 3 backticks', async () => {
+		const editor = await openMarkdownDocument(["","\t```", "\tCode Line", "Non Code Line", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(1);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+		expect(actual?.fencedCodeBlocks).to.be.lengthOf(0);
 	});
 
 });
