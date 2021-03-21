@@ -367,6 +367,26 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
 	});
 
+	it('should highlight an indented code block that immediately follows header using level 1 alternate syntax', async () => {
+		const editor = await openMarkdownDocument(["Header", "===", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block that immediately follows header using level 2 alternate syntax', async () => {
+		const editor = await openMarkdownDocument(["Header", "---", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

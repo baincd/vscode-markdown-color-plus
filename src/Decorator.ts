@@ -77,7 +77,8 @@ function isIndentedCodeBlockStart(lineText: string, document: vscode.TextDocumen
 		return prevLineText.trim().length == 0 
 		       || headingRegEx.test(prevLineText)
 		       || endFencedCodeBlockRegEx.test(prevLineText)
-		       || horizontalRuleRegEx.test(prevLineText);
+		       || horizontalRuleRegEx.test(prevLineText)
+		       || AltHeaderRegEx.test(prevLineText);
 	}
 }
 
