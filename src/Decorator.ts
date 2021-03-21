@@ -6,6 +6,14 @@ interface HeaderDecorationOptions extends vscode.DecorationOptions {
 	headerLevel: number
 }
 
+interface HeaderLine {
+	headerLevel: number,
+	lineIdx: number,
+	startChar: number,
+	endChar: number,
+	endHeaderLineIdx: number
+}
+
 export interface TextDocumentCancelToken {
 	isCancellationRequested: boolean
 	document?: vscode.TextDocument;
@@ -120,6 +128,36 @@ function findAndProcessInvisibleLineBreaks(currentLineText: string, currentLineI
 
 
 
+function isHeader(document: vscode.TextDocument, currentLineText: string, currentLineIdx: number): HeaderLine | undefined {
+	let match: RegExpMatchArray | null;
+	if ( match = currentLineText.match(HeaderRegEx) ) {
+		return {
+			headerLevel: match[3].length,
+			lineIdx: currentLineIdx,
+			startChar: match[1].length,
+			endChar: match[1].length + match[2].length,
+			endHeaderLineIdx: currentLineIdx
+		};
+	} else if ( ++currentLineIdx < document.lineCount && (match = document.lineAt(currentLineIdx).text.match(AltHeaderRegEx)) ) {
+		return {
+			headerLevel: (match[1].charAt(0) == '=' ? 1 : 2),
+			lineIdx: currentLineIdx - 1,
+			startChar: 0,
+			endChar: document.lineAt(currentLineIdx).text.trimRight().length,
+			endHeaderLineIdx: currentLineIdx
+		};
+	}
+}
+
+function processHeader(headerLine: HeaderLine, cursorLineIdx: number | undefined, activeHeaders: HeaderDecorationOptions[]) {
+	if (cursorLineIdx && headerLine.lineIdx <= cursorLineIdx) {
+		resetHeaderLevels(activeHeaders, headerLine.headerLevel);
+		if (headerLine.lineIdx < cursorLineIdx) {
+			activeHeaders.push({ headerLevel: headerLine.headerLevel, range: new vscode.Range(headerLine.lineIdx, headerLine.startChar, headerLine.lineIdx, headerLine.endChar) })
+		}
+	}
+}
+
 function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel: number) {
 	while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= headerLevel) {
 		activeHeaders.pop();
@@ -143,10 +181,6 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	let currentLineIdx = -1;
 	while (!token?.isCancellationRequested && ++currentLineIdx < document.lineCount) {
 		let currentLineText = document.lineAt(currentLineIdx).text;
-		let currentHeaderLineIdx: number = -1;
-		let currentHeaderLevel: number | null = null;
-		let currentHeaderStartChar: number = 0;
-		let currentHeaderEndChar: number = 0;
 		let match: RegExpMatchArray | null;
 
 		if ( match = currentLineText.match(fencedCodeBlockStartRegEx) ) {
@@ -158,25 +192,9 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 
 			findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
 
-			if ( (match = currentLineText.match(HeaderRegEx)) ) {
-				currentHeaderLineIdx = currentLineIdx;
-				currentHeaderLevel = match[3].length;
-				currentHeaderStartChar = match[1].length;
-				currentHeaderEndChar = match[1].length + match[2].length;
-			} else if ( (match = currentLineText.match(AltHeaderRegEx)) ) {
-				currentHeaderLineIdx = currentLineIdx - 1;
-				currentHeaderLevel = (match[1].charAt(0) == '=' ? 1 : 2);
-				currentHeaderStartChar = 0;
-				currentHeaderEndChar = document.lineAt(currentLineIdx).text.trimRight().length
-			}
-
-			if (currentHeaderLevel) {
-				if (selectedLineIdx && currentLineIdx <= selectedLineIdx) {
-					resetHeaderLevels(activeHeaders, currentHeaderLevel);
-					if (currentLineIdx < selectedLineIdx) {
-						activeHeaders.push({ headerLevel: currentHeaderLevel, range: new vscode.Range(currentHeaderLineIdx, currentHeaderStartChar, currentHeaderLineIdx, currentHeaderEndChar) })
-					}
-				}
+			let headerLine = isHeader(document, currentLineText, currentLineIdx);
+			if (headerLine) {
+				processHeader(headerLine, selectedLineIdx, activeHeaders)
 			}
 		}
 
