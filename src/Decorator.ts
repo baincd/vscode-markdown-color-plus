@@ -112,6 +112,14 @@ function findAndProcessAllInlineCode(currentLineText: string, currentLineIdx: nu
 
 
 
+function findAndProcessInvisibleLineBreaks(currentLineText: string, currentLineIdx: number, invisibleLineBreaks: vscode.DecorationOptions[], token: TextDocumentCancelToken | undefined) {
+	if (currentLineText.trim().length != 0 && invisibleLineBreakRegEx.test(currentLineText) && !nonPlainLineRegEx.test(currentLineText)) {
+		invisibleLineBreaks.push({range: new vscode.Range(currentLineIdx, currentLineText.length-2, currentLineIdx, currentLineText.length)});
+	}
+}
+
+
+
 function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel: number) {
 	while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= headerLevel) {
 		activeHeaders.pop();
@@ -148,9 +156,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		} else {
 			findAndProcessAllInlineCode(currentLineText, currentLineIdx, inlineCodeBlocks, token);
 
-			if (currentLineText.trim().length != 0 && invisibleLineBreakRegEx.test(currentLineText) && !nonPlainLineRegEx.test(currentLineText)) {
-				invisibleLineBreaks.push({range: new vscode.Range(currentLineIdx, currentLineText.length-2, currentLineIdx, currentLineText.length)});
-			}
+			findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
 
 			if ( (match = currentLineText.match(HeaderRegEx)) ) {
 				currentHeaderLineIdx = currentLineIdx;
