@@ -276,6 +276,19 @@ describe('Fenced code block decorating', () => {
 		expect(actual?.fencedCodeBlocks[1].range.end.line).to.be.eq(10);
 	});
 
+	it('should consider more chars than starting code fence as ending code fence', async () => {
+		const editor = await openMarkdownDocument(["", "`````java", "CodeLine", "```````", 
+		                                           "", "~~~~~javascript", "CodeLine", "~~~~~~~", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.fencedCodeBlocks).to.be.lengthOf(2);
+		expect(actual?.fencedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.fencedCodeBlocks[0].range.end.line).to.be.eq(2);
+		expect(actual?.fencedCodeBlocks[1].range.start.line).to.be.eq(6);
+		expect(actual?.fencedCodeBlocks[1].range.end.line).to.be.eq(6);
+	});
+
 	it('should not consider a line with trailing chars as ending code fence', async () => {
 		const editor = await openMarkdownDocument(["", "```java", "CodeLine", "```java", "Still in code block", "```", ""])
 
