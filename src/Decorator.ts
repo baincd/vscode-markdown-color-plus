@@ -14,6 +14,16 @@ interface HeaderLine {
 	endHeaderLineIdx: number
 }
 
+enum LineType {
+	START_OF_DOC = "START_OF_DOC",
+	FENCED_CODE_BLOCK = "FENCED_CODE_BLOCK",
+	INDENTED_CODE_BLOCK = "INDENTED_CODE_BLOCK",
+	HEADER = "HEADER",
+	HORIZONTAL_RULE = "HORIZONTAL_RULE",
+	WHITESPACE = "WHITESPACE",
+	MISC = "MISC"
+}
+
 export interface TextDocumentCancelToken {
 	isCancellationRequested: boolean
 	document?: vscode.TextDocument;
@@ -33,8 +43,6 @@ const fencedCodeBlockEndRegExStr = "^[ ]{0,3}{MATCH1}+\\s*$" // Based on fenced_
 
 const indentedCodeBlockRegEx = /^(?:[ ]{4}|[ ]*\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
 
-const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
-const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
 const horizontalRuleRegEx = /^[ ]{0,3}(?:\*\*\*+|---+|___+)\s*$/
 
 const nonPlainLineRegEx = /^\s*(#{1,6} .*|={2,}|-{2,}|\s{4}.*|\t.*|\*{3,}|_{3,}|\|.*\|)\s*$/ // # Header | Header == | Header -- | indented code block spaces | indented code block tab | Horizontal Rule *** | Horizontal Rule ___ | Table-ish (start and end with pipe)
@@ -66,20 +74,13 @@ function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLin
 
 
 
-function isIndentedCodeBlockStart(lineText: string, document: vscode.TextDocument, lineIdx: number): boolean {
-	if ( ! lineText.match(indentedCodeBlockRegEx) ) {
-		return false;
-	}
-	if (lineIdx == 0) {
-		return true;
-	} else {
-		let prevLineText = document.lineAt(lineIdx - 1).text;
-		return prevLineText.trim().length == 0 
-		       || headingRegEx.test(prevLineText)
-		       || endFencedCodeBlockRegEx.test(prevLineText)
-		       || horizontalRuleRegEx.test(prevLineText)
-		       || AltHeaderRegEx.test(prevLineText);
-	}
+function isIndentedCodeBlockStart(lineText: string, document: vscode.TextDocument, lineIdx: number, prevLineType: LineType): boolean {
+	return indentedCodeBlockRegEx.test(lineText) && 
+	         ( prevLineType === LineType.WHITESPACE 
+	         || prevLineType === LineType.HEADER
+	         || prevLineType === LineType.FENCED_CODE_BLOCK
+	         || prevLineType === LineType.HORIZONTAL_RULE
+	         || prevLineType === LineType.START_OF_DOC) 
 }
 
 /** - Find the end of the indented code block
@@ -166,6 +167,19 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
+
+function determinePrevLineListStatus(prevLineType: LineType, currentLineText: string): LineType {
+	if (currentLineText.trim().length == 0) {
+		return LineType.WHITESPACE;
+	} else if (currentLineText.match(horizontalRuleRegEx)) {
+		return LineType.HORIZONTAL_RULE;
+	} else {
+		return LineType.MISC;
+	}
+}
+
+
+
 export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Position, token?: TextDocumentCancelToken): DecoratedRanges | undefined {
 	if (!editor || editor.document.languageId != 'markdown') {
 		return;
@@ -179,6 +193,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
 	
+	let prevLineType = LineType.START_OF_DOC;
 	let currentLineIdx = -1;
 	while (!token?.isCancellationRequested && ++currentLineIdx < document.lineCount) {
 		let currentLineText = document.lineAt(currentLineIdx).text;
@@ -186,21 +201,22 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 
 		if ( match = currentLineText.match(fencedCodeBlockStartRegEx) ) {
 			currentLineIdx = processFencedCodeBlock(document, currentLineIdx, match[1], fencedCodeBlocks, token);
-		} else if (isIndentedCodeBlockStart(currentLineText, document, currentLineIdx)) {
+			prevLineType = LineType.FENCED_CODE_BLOCK;
+		} else if (isIndentedCodeBlockStart(currentLineText, document, currentLineIdx, prevLineType)) {
 			currentLineIdx = processIndentedCodeBlock(document, currentLineIdx, indentedCodeBlocks, token);
+			prevLineType = LineType.INDENTED_CODE_BLOCK;
 		} else {
-			let headerLine = isHeader(document, currentLineText, currentLineIdx);
-			if (headerLine) {
-				processHeader(headerLine, selectedLineIdx, activeHeaders)
-			}
-
 			findAndProcessAllInlineCode(currentLineText, currentLineIdx, inlineCodeBlocks, token);
 
-			if (!headerLine) {
+			let headerLine = isHeader(document, currentLineText, currentLineIdx);
+			if (headerLine) {
+				processHeader(headerLine, selectedLineIdx, activeHeaders);
+				currentLineIdx = headerLine.endHeaderLineIdx;
+				prevLineType = LineType.HEADER;
+			} else {
 				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
+				prevLineType = determinePrevLineListStatus(prevLineType, currentLineText);
 			}
-
-			currentLineIdx = headerLine?.endHeaderLineIdx || currentLineIdx;
 		}
 
 	}
