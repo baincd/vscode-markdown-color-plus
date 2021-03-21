@@ -42,7 +42,7 @@ const invisibleLineBreakRegEx = /\s\s$/
 
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
-const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
+const AltHeaderRegEx = /^ {0,3}(={3,}|(-{3,}))\s*$/
 
 /** - Find the end of the fenced code block
  *  - Add the code block to the @param fencedCodeBlocks array
@@ -142,8 +142,8 @@ function isHeader(document: vscode.TextDocument, currentLineText: string, curren
 		return {
 			headerLevel: (match[1].charAt(0) == '=' ? 1 : 2),
 			lineIdx: currentLineIdx - 1,
-			startChar: 0,
-			endChar: document.lineAt(currentLineIdx).text.trimRight().length,
+			startChar: currentLineText.length - currentLineText.trimLeft().length,
+			endChar: currentLineText.trimRight().length,
 			endHeaderLineIdx: currentLineIdx
 		};
 	}

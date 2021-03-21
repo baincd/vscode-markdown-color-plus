@@ -347,6 +347,123 @@ describe('Active headers decorating', () => {
 		expect(actual?.activeHeaders[0].range.end.character).to.be.eq(11);
 	});
 
+	it('should highlight headers using alternate header syntax', async () => {
+		const editor = await openMarkdownDocument(["Header L1", 
+		                                           "===", 
+		                                           "", 
+		                                           "Header L2",
+		                                           "---",
+		                                           "",
+		                                           "### Header L3",
+		                                           "",
+		                                           "Text"])
+
+		let actual = ClassUnderTest.updateDecorations(editor, new vscode.Position(7, 0));
+
+		expect(actual?.activeHeaders).to.be.lengthOf(3);
+
+		expect(actual?.activeHeaders[0].range.start.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.character).to.be.eq(9);
+
+		expect(actual?.activeHeaders[1].range.start.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[1].range.end.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.end.character).to.be.eq(9);
+
+		expect(actual?.activeHeaders[2].range.start.line).to.be.eq(6);
+		expect(actual?.activeHeaders[2].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[2].range.end.line).to.be.eq(6);
+		expect(actual?.activeHeaders[2].range.end.character).to.be.eq(13);
+	});
+
+	it('should highlight headers using alternate header syntax with more than 3 chars', async () => {
+		const editor = await openMarkdownDocument(["Header L1", 
+		                                           "=======", 
+		                                           "", 
+		                                           "Header L2",
+		                                           "-------",
+		                                           "",
+		                                           "### Header L3",
+		                                           "",
+		                                           "Text"])
+
+		let actual = ClassUnderTest.updateDecorations(editor, new vscode.Position(7, 0));
+
+		expect(actual?.activeHeaders).to.be.lengthOf(3);
+
+		expect(actual?.activeHeaders[0].range.start.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.character).to.be.eq(9);
+
+		expect(actual?.activeHeaders[1].range.start.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[1].range.end.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.end.character).to.be.eq(9);
+
+		expect(actual?.activeHeaders[2].range.start.line).to.be.eq(6);
+		expect(actual?.activeHeaders[2].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[2].range.end.line).to.be.eq(6);
+		expect(actual?.activeHeaders[2].range.end.character).to.be.eq(13);
+	});
+
+	it('should highlight headers using alternate header syntax with leading spaces and trailing', async () => {
+		const editor = await openMarkdownDocument(["Header L1", 
+		                                           "   ===   ", 
+		                                           "", 
+		                                           "Header L2",
+		                                           "   ---   ",
+		                                           "",
+		                                           "### Header L3",
+		                                           "",
+		                                           "Text"])
+
+		let actual = ClassUnderTest.updateDecorations(editor, new vscode.Position(7, 0));
+
+		expect(actual?.activeHeaders).to.be.lengthOf(3);
+
+		expect(actual?.activeHeaders[0].range.start.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.character).to.be.eq(9);
+
+		expect(actual?.activeHeaders[1].range.start.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[1].range.end.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.end.character).to.be.eq(9);
+
+		expect(actual?.activeHeaders[2].range.start.line).to.be.eq(6);
+		expect(actual?.activeHeaders[2].range.start.character).to.be.eq(0);
+		expect(actual?.activeHeaders[2].range.end.line).to.be.eq(6);
+		expect(actual?.activeHeaders[2].range.end.character).to.be.eq(13);
+	});
+
+	it('should not highlight leading spaces on headers using alternate header syntax', async () => {
+		const editor = await openMarkdownDocument(["   Header L1", 
+		                                           "===", 
+		                                           "", 
+		                                           "   Header L2",
+		                                           "---",
+		                                           "",
+		                                           "Text"])
+
+		let actual = ClassUnderTest.updateDecorations(editor, new vscode.Position(5, 0));
+
+		expect(actual?.activeHeaders).to.be.lengthOf(2);
+
+		expect(actual?.activeHeaders[0].range.start.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.start.character).to.be.eq(3);
+		expect(actual?.activeHeaders[0].range.end.line).to.be.eq(0);
+		expect(actual?.activeHeaders[0].range.end.character).to.be.eq(12);
+
+		expect(actual?.activeHeaders[1].range.start.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.start.character).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.end.line).to.be.eq(3);
+		expect(actual?.activeHeaders[1].range.end.character).to.be.eq(12);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {
