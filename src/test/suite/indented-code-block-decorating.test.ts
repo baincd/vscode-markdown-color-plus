@@ -34,6 +34,16 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(1);
 	});
 
+	it('should highlight an indented code block indented with 2 spaces and a tab', async () => {
+		const editor = await openMarkdownDocument(["", "  \tCodeLine", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(1);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(1);
+	});
+
 	it('should not highlight an indented code block when feature is disabled', async () => {
 		ConfigurationHandler.config.indentedCodeBlock.enabled = false;
 		const editor = await openMarkdownDocument(["", "    CodeLine", ""])

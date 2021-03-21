@@ -31,7 +31,7 @@ interface DecoratedRanges {
 const fencedCodeBlockStartRegEx = /^[ ]{0,3}(`{3,}|~{3,})\s*(?=([^`~]*)?$)/ // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?=([^`~]*)?$)"
 const fencedCodeBlockEndRegExStr = "^[ ]{0,3}{MATCH1}+\\s*$" // Based on fenced_code_block_unknown (limiting preceding spaces to 3) "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
 
-const indentedCodeBlockRegEx = /^([ ]{4}|\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
+const indentedCodeBlockRegEx = /^(?:[ ]{4}|[ ]*\t)/; // Based on raw_block "(^|\\G)([ ]{4}|\\t)"
 
 const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
 const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
