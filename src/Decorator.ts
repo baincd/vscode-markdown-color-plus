@@ -56,6 +56,44 @@ function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLin
 	return currentLineIdx;
 }
 
+
+
+function isIndentedCodeBlockStart(lineText: string, document: vscode.TextDocument, lineIdx: number): boolean {
+	if ( ! lineText.match(indentedCodeBlockRegEx) ) {
+		return false;
+	}
+	if (lineIdx == 0) {
+		return true;
+	} else {
+		let prevLineText = document.lineAt(lineIdx - 1).text;
+		return prevLineText.trim().length == 0 
+		       || headingRegEx.test(prevLineText)
+		       || endFencedCodeBlockRegEx.test(prevLineText)
+		       || blockQuoteRegEx.test(prevLineText);
+	}
+}
+
+/** - Find the end of the indented code block
+ *  - Add the code block to the @param indentedCodeBlocks array
+ *  - Return the line index of the larger of the last indented code block line or last consecutive whitespace line following the end of the indented code block
+ */
+function processIndentedCodeBlock(document: vscode.TextDocument, startLineIdx: number, indentedCodeBlocks: vscode.DecorationOptions[], token?: TextDocumentCancelToken): number {
+	let currentLineIdx = startLineIdx;
+	let endOfBlockFound = false;
+	let endLine = startLineIdx;
+	while (!endOfBlockFound && ++currentLineIdx < document.lineCount && !token?.isCancellationRequested) {
+		if (indentedCodeBlockRegEx.test(document.lineAt(currentLineIdx).text)) {
+			endLine = currentLineIdx;
+		} else if (document.lineAt(currentLineIdx).text.trim().length != 0) {
+			endOfBlockFound = true
+			currentLineIdx--; // set line index to previous line, so next time through loop evaluates this line
+		}	
+	}
+	indentedCodeBlocks.push({range: new vscode.Range(startLineIdx,0,endLine,document.lineAt(endLine).text.length)})
+	return currentLineIdx;
+}
+
+
 function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel: number) {
 	while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= headerLevel) {
 		activeHeaders.pop();
@@ -87,31 +125,8 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 
 		if ( match = currentLineText.match(fencedCodeBlockStartRegEx) ) {
 			currentLineIdx = processFencedCodeBlock(document, currentLineIdx, match[1], fencedCodeBlocks, token);
-		} else if (indentedCodeBlockRegEx.test(currentLineText)) {
-			let isCodeBlock: boolean;
-			if (currentLineIdx == 0) {
-				isCodeBlock = true;
-			} else {
-				let prevLineText = document.lineAt(currentLineIdx - 1).text;
-				isCodeBlock = prevLineText.trim().length == 0 
-							|| headingRegEx.test(prevLineText)
-							|| endFencedCodeBlockRegEx.test(prevLineText)
-							|| blockQuoteRegEx.test(prevLineText);
-			}
-			if (isCodeBlock) {
-				let startLine = currentLineIdx;
-				let endOfBlockFound = false;
-				let endLine = startLine;
-				while (!endOfBlockFound && ++currentLineIdx < document.lineCount) {
-					if (indentedCodeBlockRegEx.test(document.lineAt(currentLineIdx).text)) {
-						endLine = currentLineIdx;
-					} else if (document.lineAt(currentLineIdx).text.trim().length != 0) {
-						endOfBlockFound = true
-						currentLineIdx--; // set line index to previous line, so next time through loop evaluates this line
-					}	
-				}
-				indentedCodeBlocks.push({range: new vscode.Range(startLine,0,endLine,document.lineAt(endLine).text.length)})
-			}
+		} else if (isIndentedCodeBlockStart(currentLineText, document, currentLineIdx)) {
+			currentLineIdx = processIndentedCodeBlock(document, currentLineIdx, indentedCodeBlocks, token);
 		} else {
 			let searchFrom = 0;
 			let startIdx : number
