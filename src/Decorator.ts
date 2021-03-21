@@ -94,6 +94,24 @@ function processIndentedCodeBlock(document: vscode.TextDocument, startLineIdx: n
 }
 
 
+/** - Find all inline code within line
+ *  - Add to inlineCodeBlocks
+ */
+function findAndProcessAllInlineCode(currentLineText: string, currentLineIdx: number, inlineCodeBlocks: vscode.DecorationOptions[], token: TextDocumentCancelToken | undefined) {
+	let searchFrom = 0;
+	let startIdx : number
+	while ((startIdx = currentLineText.indexOf("`", searchFrom)) > -1) {
+		searchFrom = startIdx + 1;
+		let endIdx
+		if ((endIdx = currentLineText.indexOf("`",searchFrom)) > -1) {
+			inlineCodeBlocks.push({range: new vscode.Range(currentLineIdx,startIdx + 1,currentLineIdx, endIdx)});
+			searchFrom = endIdx + 1;
+		}
+	}
+}
+
+
+
 function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel: number) {
 	while (activeHeaders[activeHeaders.length - 1]?.headerLevel >= headerLevel) {
 		activeHeaders.pop();
@@ -128,16 +146,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		} else if (isIndentedCodeBlockStart(currentLineText, document, currentLineIdx)) {
 			currentLineIdx = processIndentedCodeBlock(document, currentLineIdx, indentedCodeBlocks, token);
 		} else {
-			let searchFrom = 0;
-			let startIdx : number
-			while ((startIdx = currentLineText.indexOf("`", searchFrom)) > -1) {
-				searchFrom = startIdx + 1;
-				let endIdx
-				if ((endIdx = currentLineText.indexOf("`",searchFrom)) > -1) {
-					inlineCodeBlocks.push({range: new vscode.Range(currentLineIdx,startIdx + 1,currentLineIdx, endIdx)});
-					searchFrom = endIdx + 1;
-				}
-			}
+			findAndProcessAllInlineCode(currentLineText, currentLineIdx, inlineCodeBlocks, token);
 
 			if (currentLineText.trim().length != 0 && invisibleLineBreakRegEx.test(currentLineText) && !nonPlainLineRegEx.test(currentLineText)) {
 				invisibleLineBreaks.push({range: new vscode.Range(currentLineIdx, currentLineText.length-2, currentLineIdx, currentLineText.length)});
@@ -195,4 +204,3 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }
-
