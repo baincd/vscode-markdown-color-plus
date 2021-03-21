@@ -6,3 +6,4 @@ tslint.json
 tsconfig.json
 out/test/**
 *.gitignored.*
+example-files/**

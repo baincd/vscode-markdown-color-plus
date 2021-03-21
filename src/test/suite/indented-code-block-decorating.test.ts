@@ -408,6 +408,103 @@ describe('Indented code block decorating', () => {
 		expect(actual?.fencedCodeBlocks).to.be.lengthOf(0);
 	});
 
+	it('should not highlight list items 3 levels deep', async () => {
+		const editor = await openMarkdownDocument(["- List item", 
+		                                           "  - List item", 
+		                                           "    - List Item (Not Code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight multiple indented lines intermixed with whitespace immediately following list', async () => {
+		const editor = await openMarkdownDocument(["- List item", 
+		                                           "    Indented line (not code)", 
+		                                           "    Indented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight multiple indented lines intermixed with whitespace immediately following lists using asterisk', async () => {
+		const editor = await openMarkdownDocument(["* List item", 
+		                                           "    Indented line (not code)", 
+		                                           "    Indented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight multiple indented lines intermixed with whitespace immediately following lists using plus', async () => {
+		const editor = await openMarkdownDocument(["+ List item", 
+		                                           "    Indented line (not code)", 
+		                                           "    Indented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight multiple indented lines intermixed with whitespace immediately following ordered list', async () => {
+		const editor = await openMarkdownDocument(["12. List item", 
+		                                           "    Indented line (not code)", 
+		                                           "    Indented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight indented line follows list / indented line (4 spaces) / blank / indented line (2 spaces)', async () => {
+		const editor = await openMarkdownDocument(["- List item", 
+		                                           "    Indented line (not code)", 
+		                                           "", 
+		                                           "  Indented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight indented line follows list / indented line (4 spaces) / blank / indented line (tab)', async () => {
+		const editor = await openMarkdownDocument(["- List item", 
+		                                           "    Indented line (not code)", 
+		                                           "", 
+		                                           "\tIndented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight indented line follows list / indented line (4 spaces) / blank / indented line (space+tab)', async () => {
+		const editor = await openMarkdownDocument(["- List item", 
+		                                           "    Indented line (not code)", 
+		                                           "", 
+		                                           " \tIndented line (not code)", 
+		                                           "",
+		                                           "    Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

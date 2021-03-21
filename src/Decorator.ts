@@ -20,6 +20,9 @@ enum LineType {
 	INDENTED_CODE_BLOCK = "INDENTED_CODE_BLOCK",
 	HEADER = "HEADER",
 	HORIZONTAL_RULE = "HORIZONTAL_RULE",
+	LIST = "LIST",
+	LIST_PARAGRAPH = "LIST_PARAGRAPH",
+	LIST_PARAGRAPH_WHITESPACE = "LIST_PARAGRAPH_WHITESPACE",
 	WHITESPACE = "WHITESPACE",
 	MISC = "MISC"
 }
@@ -51,6 +54,10 @@ const invisibleLineBreakRegEx = /\s\s$/
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
 const AltHeaderRegEx = /^ {0,3}(={3,}|(-{3,}))\s*$/
+
+const ListRegEx = /^(?:-|\*|\+|\d+\.)\s*\S/
+
+const listParagraphRegEx = /^(?:[ ]{2,}|[ ]*\t)/;
 
 /** - Find the end of the fenced code block
  *  - Add the code block to the @param fencedCodeBlocks array
@@ -169,12 +176,27 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 
 function determinePrevLineListStatus(prevLineType: LineType, currentLineText: string): LineType {
-	if (currentLineText.trim().length == 0) {
-		return LineType.WHITESPACE;
-	} else if (currentLineText.match(horizontalRuleRegEx)) {
-		return LineType.HORIZONTAL_RULE;
+	if (prevLineType.startsWith("LIST")) {
+		if (currentLineText.trim().length == 0) {
+			return LineType.LIST_PARAGRAPH_WHITESPACE;
+		} else if (currentLineText.match(ListRegEx)) {
+			return LineType.LIST;
+		} else if (currentLineText.match(listParagraphRegEx)) {
+			return LineType.LIST_PARAGRAPH;
+		} else {
+			return (prevLineType === LineType.LIST_PARAGRAPH_WHITESPACE ? LineType.MISC : LineType.LIST_PARAGRAPH);
+		}
+
 	} else {
-		return LineType.MISC;
+		if (currentLineText.trim().length == 0) {
+			return LineType.WHITESPACE;
+		} else if (currentLineText.match(horizontalRuleRegEx)) {
+			return LineType.HORIZONTAL_RULE;
+		} else if (currentLineText.match(ListRegEx)) {
+			return LineType.LIST;
+		} else {
+			return LineType.MISC;
+		}
 	}
 }
 
@@ -249,3 +271,4 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }
+
