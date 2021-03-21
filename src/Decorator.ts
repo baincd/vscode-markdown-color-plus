@@ -32,19 +32,26 @@ const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
 const nonPlainLineRegEx = /^\s*(#{1,6} .*|={2,}|-{2,}|\s{4}.*|\t.*|\*{3,}|_{3,}|\|.*\|)\s*$/ // # Header | Header == | Header -- | indented code block spaces | indented code block tab | Horizontal Rule *** | Horizontal Rule ___ | Table-ish (start and end with pipe)
 const invisibleLineBreakRegEx = /\s\s$/
 
-
 const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
 const AltHeaderRegEx = /^(={3,}|(-{3,}))[ \t]*$/
 
-
-const fencedCodeBlockEndRegEx = /^\s{0,3}(`{3,}|~{3,})\s*$/ // Based on fenced_code_block_unknown "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$"
-
+/** - Find the end of the fenced code block
+ *  - Add the code block to the @param fencedCodeBlocks array
+ *  - Return the line index of the ending code block fence line
+ */
+function processFencedCodeBlock(document: vscode.TextDocument, startFenceIdx: number, fence: string, fencedCodeBlocks: vscode.DecorationOptions[], token?: TextDocumentCancelToken): number {
+	let endFenceLineIdx = findEndOfFencedCodeBlockLineIdx(document, startFenceIdx, fence, token);
+	if (startFenceIdx + 1 < endFenceLineIdx) {
+		fencedCodeBlocks.push({range: new vscode.Range(startFenceIdx+1, 0, endFenceLineIdx-1, document.lineAt(endFenceLineIdx-1).text.length)});
+	}
+	return endFenceLineIdx;
+}
 
 function findEndOfFencedCodeBlockLineIdx(document: vscode.TextDocument, startLineIdx: number, fenceMarker: string, token?: TextDocumentCancelToken) {
 	let fencedCodeBlockEndRegEx = new RegExp(fencedCodeBlockEndRegExStr.replace("{MATCH1}",fenceMarker));
 	let currentLineIdx = startLineIdx;
-	while (!token?.isCancellationRequested && ++currentLineIdx < document.lineCount && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx)) {
+	while (++currentLineIdx < document.lineCount && !document.lineAt(currentLineIdx).text.match(fencedCodeBlockEndRegEx) && !token?.isCancellationRequested) {
 	}
 	return currentLineIdx;
 }
@@ -78,12 +85,8 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		let currentHeaderEndChar: number = 0;
 		let match: RegExpMatchArray | null;
 
-		if ( match = currentLineText.match(fencedCodeBlockStartRegEx)) {
-			let codeFenceStartIdx = currentLineIdx;
-			currentLineIdx = findEndOfFencedCodeBlockLineIdx(document, currentLineIdx, match[1], token);
-			if (codeFenceStartIdx + 1 < currentLineIdx) {
-				fencedCodeBlocks.push({range: new vscode.Range(codeFenceStartIdx+1, 0, currentLineIdx-1, document.lineAt(currentLineIdx-1).text.length)});
-			}
+		if ( match = currentLineText.match(fencedCodeBlockStartRegEx) ) {
+			currentLineIdx = processFencedCodeBlock(document, currentLineIdx, match[1], fencedCodeBlocks, token);
 		} else if (indentedCodeBlockRegEx.test(currentLineText)) {
 			let isCodeBlock: boolean;
 			if (currentLineIdx == 0) {
@@ -177,3 +180,4 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
 }
+
