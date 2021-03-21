@@ -307,6 +307,66 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
 	});
 
+	it('should highlight an indented code block that immediately follows horizontal rule using asterisks', async () => {
+		const editor = await openMarkdownDocument(["", "***", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block that immediately follows horizontal rule using hyphens', async () => {
+		const editor = await openMarkdownDocument(["", "---", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block that immediately follows horizontal rule using underscores', async () => {
+		const editor = await openMarkdownDocument(["", "___", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block that immediately follows horizontal rule using more than 3 asterisks ', async () => {
+		const editor = await openMarkdownDocument(["", "*****", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block that immediately follows horizontal rule with trailing whitespace', async () => {
+		const editor = await openMarkdownDocument(["", "*****  \t  ", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
+	it('should highlight an indented code block that immediately follows horizontal rule with up to 3 leading spaces', async () => {
+		const editor = await openMarkdownDocument(["", "  ***", "    Indented Line (code)", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.indentedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {
