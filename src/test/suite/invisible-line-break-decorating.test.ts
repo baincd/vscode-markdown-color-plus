@@ -129,6 +129,22 @@ describe('Invisible line break decorating', () => {
 		expect(actual?.invisibleLineBreaks).to.be.lengthOf(0);
 	});
 
+	it('should not highlight 2 trailing spaces of header level 1 using alternate syntax', async () => {
+		const editor = await openMarkdownDocument(["", "Header level 1  ", "===  ", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.invisibleLineBreaks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight 2 trailing spaces of header level 1 using alternate syntax', async () => {
+		const editor = await openMarkdownDocument(["", "Header level 2  ", "---  ", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.invisibleLineBreaks).to.be.lengthOf(0);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

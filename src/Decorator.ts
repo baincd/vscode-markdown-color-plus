@@ -188,14 +188,18 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		} else if (isIndentedCodeBlockStart(currentLineText, document, currentLineIdx)) {
 			currentLineIdx = processIndentedCodeBlock(document, currentLineIdx, indentedCodeBlocks, token);
 		} else {
-			findAndProcessAllInlineCode(currentLineText, currentLineIdx, inlineCodeBlocks, token);
-
-			findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
-
 			let headerLine = isHeader(document, currentLineText, currentLineIdx);
 			if (headerLine) {
 				processHeader(headerLine, selectedLineIdx, activeHeaders)
 			}
+
+			findAndProcessAllInlineCode(currentLineText, currentLineIdx, inlineCodeBlocks, token);
+
+			if (!headerLine) {
+				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
+			}
+
+			currentLineIdx = headerLine?.endHeaderLineIdx || currentLineIdx;
 		}
 
 	}
