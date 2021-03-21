@@ -137,6 +137,24 @@ describe('Fenced code block decorating', () => {
 		expect(actual?.fencedCodeBlocks[0].range.end.line).to.be.eq(4);
 	});
 
+	it('should not consider 3 backticks with preceding tab as starting code fence', async () => {
+		const editor = await openMarkdownDocument(["", "\t```", "Not CodeLine", ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.fencedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not consider 3 backticks with preceding tab as ending code fence', async () => {
+		const editor = await openMarkdownDocument(["", "```", "CodeLine", "\t```", "Still in code block", "```"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.fencedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.fencedCodeBlocks[0].range.start.line).to.be.eq(2);
+		expect(actual?.fencedCodeBlocks[0].range.end.line).to.be.eq(4);
+	});
+
 	it('should consider 3 backticks with trailing spaces as ending fence', async () => {
 		const editor = await openMarkdownDocument(["", "```", "CodeLine", "```      ", "Not in code block", ""])
 
