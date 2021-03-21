@@ -299,6 +299,14 @@ describe('Indented code block decorating', () => {
 		expect(actual?.fencedCodeBlocks).to.be.lengthOf(0);
 	});
 
+	it('should not highlight an indented code block that immediately follows a block quote', async () => {
+		const editor = await openMarkdownDocument([" > Blockquote", "    Line1", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

@@ -35,7 +35,6 @@ const indentedCodeBlockRegEx = /^(?:[ ]{4}|[ ]*\t)/; // Based on raw_block "(^|\
 
 const headingRegEx = /^[ ]{0,3}(#{1,6}\s+(.*?)(\s+#{1,6})?\s*)$/
 const endFencedCodeBlockRegEx = /^\s*(`{3,}|~{3,})\s*/
-const blockQuoteRegEx = /^[ ]{0,3}(>) ?/
 
 const nonPlainLineRegEx = /^\s*(#{1,6} .*|={2,}|-{2,}|\s{4}.*|\t.*|\*{3,}|_{3,}|\|.*\|)\s*$/ // # Header | Header == | Header -- | indented code block spaces | indented code block tab | Horizontal Rule *** | Horizontal Rule ___ | Table-ish (start and end with pipe)
 const invisibleLineBreakRegEx = /\s\s$/
@@ -76,8 +75,7 @@ function isIndentedCodeBlockStart(lineText: string, document: vscode.TextDocumen
 		let prevLineText = document.lineAt(lineIdx - 1).text;
 		return prevLineText.trim().length == 0 
 		       || headingRegEx.test(prevLineText)
-		       || endFencedCodeBlockRegEx.test(prevLineText)
-		       || blockQuoteRegEx.test(prevLineText);
+		       || endFencedCodeBlockRegEx.test(prevLineText);
 	}
 }
 
