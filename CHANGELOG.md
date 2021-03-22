@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2021-03-21
+### Changed
+- Improved internal extension logic
+### Added
+- Add support for indented code blocks immediately following horizontal rules
+- Add support for indented code blocks immediately following alternate style headers
+- Add logic for indented code blocks following lists
+### Fixed
+- Fix bugs with highlighting headers using alternate header syntax
+- Fix bug that highlighted invisible line breaks on headers
+- Fix bug detecting starting code fence when preceded with tab
+- Fix bug detecting ending code fence longer than starting code fence
+- Fix bug detecting indented code blocks indented with spaces then a tab
+- Fix bug that highlighted indented lines that immediately followed block quotes
+
 ## [1.2.3] - 2021-03-16
 ### Added
 - Make delays between events and updating background colors configurable
