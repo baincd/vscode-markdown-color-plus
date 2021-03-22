@@ -247,18 +247,20 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		const config = ConfigurationHandler.config;
 
 		const decoratedRanges: DecoratedRanges = {
-			fencedCodeBlocks:    (config.fencedCodeBlock.enabled                 ? fencedCodeBlocks    : []),
-			indentedCodeBlocks:  (config.indentedCodeBlock.enabled               ? indentedCodeBlocks  : []),
-			inlineCodeBlocks:    (config.inlineCode.enabled                      ? inlineCodeBlocks    : []),
-			invisibleLineBreaks: (config.invisibleLineBreak.enabled              ? invisibleLineBreaks : []),
-			activeHeaders:       (config.activeHeader.enabled && selectedLineIdx ? activeHeaders       : []),
+			fencedCodeBlocks:    (config.fencedCodeBlock.enabled    ? fencedCodeBlocks    : []),
+			indentedCodeBlocks:  (config.indentedCodeBlock.enabled  ? indentedCodeBlocks  : []),
+			inlineCodeBlocks:    (config.inlineCode.enabled         ? inlineCodeBlocks    : []),
+			invisibleLineBreaks: (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []),
+			activeHeaders:       (config.activeHeader.enabled       ? activeHeaders       : []),
 		}
 
 		editor.setDecorations(config.fencedCodeBlock.decorationType,    decoratedRanges.fencedCodeBlocks);
 		editor.setDecorations(config.indentedCodeBlock.decorationType,  decoratedRanges.indentedCodeBlocks);
 		editor.setDecorations(config.inlineCode.decorationType,         decoratedRanges.inlineCodeBlocks);
 		editor.setDecorations(config.invisibleLineBreak.decorationType, decoratedRanges.invisibleLineBreaks);
-		editor.setDecorations(config.activeHeader.decorationType,       decoratedRanges.activeHeaders);
+		if (selectedLineIdx) {
+			editor.setDecorations(config.activeHeader.decorationType,       decoratedRanges.activeHeaders);
+		}
 
 		return decoratedRanges;
 	} 
