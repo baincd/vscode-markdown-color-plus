@@ -55,7 +55,7 @@ const HeaderRegEx = /^( {0,3})((#{1,6}) .*\S)\s*/
 
 const AltHeaderRegEx = /^ {0,3}(={3,}|(-{3,}))\s*$/
 
-const ListRegEx = /^(?:-|\*|\+|\d+\.)\s*\S/
+const ListRegEx = /^[ ]{0,2}(?:-|\*|\+|\d+\.)\s*\S/
 
 const listParagraphRegEx = /^(?:[ ]{2,}|[ ]*\t)/;
 

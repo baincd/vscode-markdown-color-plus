@@ -88,5 +88,22 @@ x
   
 	indented with tab
   
-    Indeted Line (not code)
+    Indented Line (not code)
 
+---
+
+ * List with one leading space
+
+    Text indented with 4 spaces (not code)
+
+---
+
+  * List with two leading spaces
+
+    Text indented with 4 spaces (not code)
+
+---
+
+   * List with three leading spaces
+
+    Text indented with 4 spaces (code)

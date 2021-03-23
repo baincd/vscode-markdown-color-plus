@@ -505,6 +505,26 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
 	});
 
+	it('should not highlight indented line follows list with 1 leading space / indented line (4 spaces) / blank / indented line (space+tab)', async () => {
+		const editor = await openMarkdownDocument([" - List item with one leading space",
+		                                           "",
+		                                           "     Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
+	it('should not highlight indented line follows list with 2 leading space / indented line (4 spaces) / blank / indented line (space+tab)', async () => {
+		const editor = await openMarkdownDocument(["  - List item with one leading space",
+		                                           "",
+		                                           "     Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {
