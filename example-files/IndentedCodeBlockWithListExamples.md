@@ -107,3 +107,8 @@ x
    * List with three leading spaces
 
     Text indented with 4 spaces (code)
+
+---
+*italicized text*
+
+    Indented code line
