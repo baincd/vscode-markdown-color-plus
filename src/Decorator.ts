@@ -133,12 +133,12 @@ function processIndentedCodeBlock(document: vscode.TextDocument, startLineIdx: n
  */
 function findAndProcessInlineCodeBlocks(currentLineText: string, currentLineIdx: number, inlineCodeBlocks: vscode.DecorationOptions[], possibleStrikeThrough: boolean) {
 	let searchFrom = 0;
-	let startIdx : number
+	let startIdx: number;
 	while ((startIdx = currentLineText.indexOf("`", searchFrom)) > -1) {
 		searchFrom = startIdx + 1;
-		let endIdx
-		if ((endIdx = currentLineText.indexOf("`",searchFrom)) > -1) {
-			inlineCodeBlocks.push({range: new vscode.Range(currentLineIdx,startIdx + 1,currentLineIdx, endIdx)});
+		let endIdx;
+		if ((endIdx = currentLineText.indexOf("`", searchFrom)) > -1) {
+			inlineCodeBlocks.push({ range: new vscode.Range(currentLineIdx, startIdx + 1, currentLineIdx, endIdx) });
 			searchFrom = endIdx + 1;
 			if (possibleStrikeThrough) {
 				currentLineText = currentLineText.slice(0, startIdx) + "X".repeat(endIdx - startIdx) + currentLineText.substring(endIdx);
