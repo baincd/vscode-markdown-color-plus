@@ -7,6 +7,7 @@ These are all considered a very low priority, with no current plans to be fixed.
 * Valid indented code blocks that follow a non-blank line other than a header, horizontal rule, or a fenced code block will not have the background set
 * Multiple backticks in inline code (for example ` ``Hello`` `) will not have the background set
 * Inline code that spans multiple lines will not have the background set
+* Strike through text that spans multiple lines will not be struck through or have opacity set
 * Invisible line breaks will not be highlighted on non-table lines that start and end with |
 * Invisible line breaks within inline code is highlighted 
 * The header highlights do not refresh if you move the cursor to whitespace (making an edit or moving the cursor to text will update the header highlights)

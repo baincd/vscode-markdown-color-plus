@@ -1,6 +1,6 @@
 # Markdown Color Plus
 
-Additional Colorization for Markdown Files (background color of code, invisible line breaks, and current section headers)
+Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, and current section headers)
 
 ## Features
 
@@ -21,6 +21,10 @@ All these features can be configured or disabled
 ### Highlight invisible line breaks (2 trailing spaces)
 
 ![invisible line breaks example](images/example-invisible-line-breaks.png)
+
+### Strikethrough text
+
+![strikethrough text example](images/example-strikethrough-text.png)
 
 ### Highlight Current Section Headers
 
