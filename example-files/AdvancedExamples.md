@@ -117,3 +117,45 @@ Line 2
     Line 2
 
 outside
+
+
+# Strikethrough Examples
+
+~~x~~
+
+~~strthr~~
+
+`code ~~nostrthr~~`
+
+`code ~~nostrthr`~~
+
+~~`strthr code`~~
+
+~~`strthr ~~ code`~~
+
+~~ no strthr~~
+
+~~no strthr ~~
+
+~~strthr~~  ~~strthr~~
+
+~~~nostrthr
+~~~
+
+# Header ~~strthr~~ line
+
+X~~~no strthr~~ # No Strikethrough on GitHub
+
+Y~~no strthr~~~ # No Strikethrough on GitHub
+
+Z ~~strthr~~~strthr~~ # middle ~~~ does not end strikethrough on GitHub
+
+A~~strthr~~A
+
+~~ ~~strthr~~
+
+~~strthr ~~  still strthr~~
+
+(tabs)	~~	~~strthr~~
+
+(tabs)	~~strthr	~~	still	strthr~~

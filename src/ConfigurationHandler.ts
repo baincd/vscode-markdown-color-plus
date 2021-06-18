@@ -15,6 +15,7 @@ export interface ExtensionConfiguration {
 	fencedCodeBlock: ExtensionFeatureConfig;
 	indentedCodeBlock: ExtensionFeatureConfig;
 	inlineCode: ExtensionFeatureConfig;
+	strikeThrough: ExtensionFeatureConfig;
 	invisibleLineBreak: ExtensionFeatureConfig;
 	activeHeader: ExtensionFeatureConfig;
 }
@@ -55,6 +56,13 @@ function doReadConfig(): ExtensionConfiguration {
 			decorationType: vscode.window.createTextEditorDecorationType({
 				light: { backgroundColor: colorizerConfig.get<string>('inlineCode.background.lightThemeColor') },
 				dark:  { backgroundColor: colorizerConfig.get<string>('inlineCode.background.darkThemeColor') },
+			})
+		},
+
+		strikeThrough: {
+			enabled: colorizerConfig.get<boolean>('strikeThrough.decoration.enabled',false),
+			decorationType: vscode.window.createTextEditorDecorationType({
+				opacity: colorizerConfig.get<string>('strikeThrough.decoration.opacity')
 			})
 		},
 

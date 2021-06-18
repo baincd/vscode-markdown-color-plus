@@ -2,6 +2,10 @@ import * as vscode from 'vscode';
 
 import * as ConfigurationHandler from './ConfigurationHandler'
 
+const lineThroughDecoration = vscode.window.createTextEditorDecorationType({
+	textDecoration: "line-through"
+})
+
 interface HeaderDecorationOptions extends vscode.DecorationOptions {
 	headerLevel: number
 }
@@ -36,6 +40,7 @@ interface DecoratedRanges {
 	fencedCodeBlocks: vscode.DecorationOptions[];
 	indentedCodeBlocks: vscode.DecorationOptions[];
 	inlineCodeBlocks: vscode.DecorationOptions[];
+	strikeThroughBlocks: vscode.DecorationOptions[];
 	invisibleLineBreaks: vscode.DecorationOptions[];
 	activeHeaders: HeaderDecorationOptions[];
 }
@@ -111,10 +116,22 @@ function processIndentedCodeBlock(document: vscode.TextDocument, startLineIdx: n
 }
 
 
+/** - Find all inline code within line, add to inlineCodeBlocks
+ *  - Find all strike through sections within line, add to strikeThroughBlocks
+ */
+ function findAndProcessAllInlineDecorations(currentLineText: string, currentLineIdx: number, inlineCodeBlocks: vscode.DecorationOptions[], strikeThroughBlocks: vscode.DecorationOptions[], token: TextDocumentCancelToken | undefined) {
+	const possibleStrikeThrough = currentLineText.indexOf("~~") >= 0;
+	const modifiedLineText = findAndProcessInlineCodeBlocks(currentLineText, currentLineIdx, inlineCodeBlocks, possibleStrikeThrough);
+	if (possibleStrikeThrough) {
+		findAndProcessInlineStrikeThroughBlocks(modifiedLineText, currentLineIdx, strikeThroughBlocks);
+	}
+}
+
 /** - Find all inline code within line
  *  - Add to inlineCodeBlocks
+ *  - Return currentLineText with inlineCodeBlocks replaced with X's
  */
-function findAndProcessAllInlineCode(currentLineText: string, currentLineIdx: number, inlineCodeBlocks: vscode.DecorationOptions[], token: TextDocumentCancelToken | undefined) {
+function findAndProcessInlineCodeBlocks(currentLineText: string, currentLineIdx: number, inlineCodeBlocks: vscode.DecorationOptions[], possibleStrikeThrough: boolean) {
 	let searchFrom = 0;
 	let startIdx : number
 	while ((startIdx = currentLineText.indexOf("`", searchFrom)) > -1) {
@@ -123,10 +140,32 @@ function findAndProcessAllInlineCode(currentLineText: string, currentLineIdx: nu
 		if ((endIdx = currentLineText.indexOf("`",searchFrom)) > -1) {
 			inlineCodeBlocks.push({range: new vscode.Range(currentLineIdx,startIdx + 1,currentLineIdx, endIdx)});
 			searchFrom = endIdx + 1;
+			if (possibleStrikeThrough) {
+				currentLineText = currentLineText.slice(0, startIdx) + "X".repeat(endIdx - startIdx) + currentLineText.substring(endIdx);
+		}
+	}
+	}
+	return currentLineText;
+}
+
+/** - Find all strike through blocks within inline-code-free line
+ *  - Add to strikeThroughBlocks
+ */
+ function findAndProcessInlineStrikeThroughBlocks(currentLineText: string, currentLineIdx: number, strikeThroughBlocks: vscode.DecorationOptions[]) {
+	let startIdx: number | undefined;
+	let endIdx: number | undefined;
+
+	const startMarkerRegEx = /(?<!~)~~[^\s~]/g;
+	const endMarkerRegEx = /(?<![\s~])~~(?!~)/g;
+
+	while ((startIdx = startMarkerRegEx.exec(currentLineText)?.index) !== undefined) {
+		endMarkerRegEx.lastIndex = startIdx + 2;
+		if ((endIdx = endMarkerRegEx.exec(currentLineText)?.index) !== undefined) {
+			strikeThroughBlocks.push({ range: new vscode.Range(currentLineIdx, startIdx, currentLineIdx, endIdx + 2) });
+			startMarkerRegEx.lastIndex = endIdx + 3;
 		}
 	}
 }
-
 
 
 function findAndProcessInvisibleLineBreaks(currentLineText: string, currentLineIdx: number, invisibleLineBreaks: vscode.DecorationOptions[], token: TextDocumentCancelToken | undefined) {
@@ -212,6 +251,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 	const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 	const inlineCodeBlocks: vscode.DecorationOptions[] = [];
+	const strikeThroughBlocks: vscode.DecorationOptions[] = [];
 	const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
 	
@@ -228,7 +268,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 			currentLineIdx = processIndentedCodeBlock(document, currentLineIdx, indentedCodeBlocks, token);
 			prevLineType = LineType.INDENTED_CODE_BLOCK;
 		} else {
-			findAndProcessAllInlineCode(currentLineText, currentLineIdx, inlineCodeBlocks, token);
+			findAndProcessAllInlineDecorations(currentLineText, currentLineIdx, inlineCodeBlocks, strikeThroughBlocks, token);
 
 			let headerLine = isHeader(document, currentLineText, currentLineIdx);
 			if (headerLine) {
@@ -250,6 +290,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 			fencedCodeBlocks:    (config.fencedCodeBlock.enabled    ? fencedCodeBlocks    : []),
 			indentedCodeBlocks:  (config.indentedCodeBlock.enabled  ? indentedCodeBlocks  : []),
 			inlineCodeBlocks:    (config.inlineCode.enabled         ? inlineCodeBlocks    : []),
+			strikeThroughBlocks: (config.strikeThrough.enabled      ? strikeThroughBlocks : []),
 			invisibleLineBreaks: (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []),
 			activeHeaders:       (config.activeHeader.enabled       ? activeHeaders       : []),
 		}
@@ -257,6 +298,8 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		editor.setDecorations(config.fencedCodeBlock.decorationType,    decoratedRanges.fencedCodeBlocks);
 		editor.setDecorations(config.indentedCodeBlock.decorationType,  decoratedRanges.indentedCodeBlocks);
 		editor.setDecorations(config.inlineCode.decorationType,         decoratedRanges.inlineCodeBlocks);
+		editor.setDecorations(lineThroughDecoration,                    lineThroughBlocks(decoratedRanges.strikeThroughBlocks));
+		editor.setDecorations(config.strikeThrough.decorationType,      decoratedRanges.strikeThroughBlocks);
 		editor.setDecorations(config.invisibleLineBreak.decorationType, decoratedRanges.invisibleLineBreaks);
 		if (selectedLineIdx) {
 			editor.setDecorations(config.activeHeader.decorationType,       decoratedRanges.activeHeaders);
@@ -270,7 +313,18 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
+	editor.setDecorations(lineThroughDecoration, []);
+	editor.setDecorations(ConfigurationHandler.config.strikeThrough.decorationType, []);
 	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
+}
+
+function lineThroughBlocks(strikeThroughBlocks: vscode.DecorationOptions[]): vscode.DecorationOptions[] {
+	const blocks: vscode.DecorationOptions[] = [];
+	strikeThroughBlocks.forEach(strikeThroughBlock => {
+		const outer = strikeThroughBlock.range;
+		blocks.push({range: new vscode.Range(outer.start.line, outer.start.character + 2, outer.end.line, outer.end.character - 2)});
+	});
+	return blocks;
 }
 
