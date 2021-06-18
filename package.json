@@ -72,15 +72,15 @@
 					"default": true,
 					"markdownDescription": "Enable highlighting invisible line breaks (2 spaces at the end of a line)"
 				},
-				"markdown-color-plus.strikeThrough.decoration.enabled": {
+				"markdown-color-plus.strikethrough.decoration.enabled": {
 					"type": "boolean",
 					"default": true,
-					"markdownDescription": "Enable strike through decoration of text between strike through markers"
+					"markdownDescription": "Enable strikethrough decoration of text between strikethrough markers"
 				},
-				"markdown-color-plus.strikeThrough.decoration.opacity": {
+				"markdown-color-plus.strikethrough.decoration.opacity": {
 					"type": "string",
 					"default": "0.60",
-					"markdownDescription": "Opacity of text between strike through markers"
+					"markdownDescription": "Opacity of text between strikethrough markers"
 				},
 				"markdown-color-plus.invisibleLineBreak.background.lightThemeColor": {
 					"type": "string",

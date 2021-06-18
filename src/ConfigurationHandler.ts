@@ -60,9 +60,9 @@ function doReadConfig(): ExtensionConfiguration {
 		},
 
 		strikeThrough: {
-			enabled: colorizerConfig.get<boolean>('strikeThrough.decoration.enabled',false),
+			enabled: colorizerConfig.get<boolean>('strikethrough.decoration.enabled',false),
 			decorationType: vscode.window.createTextEditorDecorationType({
-				opacity: colorizerConfig.get<string>('strikeThrough.decoration.opacity')
+				opacity: colorizerConfig.get<string>('strikethrough.decoration.opacity')
 			})
 		},
 
