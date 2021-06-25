@@ -7,13 +7,12 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "--disable-extensions",
                 "--extensionDevelopmentPath=${workspaceRoot}" 
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/**/*.js" ],
-            "preLaunchTask": "npm: watch"
+            "preLaunchTask": "npm: webpack"
         },
 		{
 			"name": "Run Extension Tests",
@@ -26,7 +25,7 @@
 				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
 			],
 			"outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-			"preLaunchTask": "npm: watch",
+			"preLaunchTask": "npm: test-compile",
             "internalConsoleOptions": "openOnSessionStart"
 		}
 	]
