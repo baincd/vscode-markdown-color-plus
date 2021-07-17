@@ -72,16 +72,6 @@
 					"default": true,
 					"markdownDescription": "Enable highlighting invisible line breaks (2 spaces at the end of a line)"
 				},
-				"markdown-color-plus.strikethrough.decoration.enabled": {
-					"type": "boolean",
-					"default": true,
-					"markdownDescription": "Enable strikethrough decoration of text between strikethrough markers"
-				},
-				"markdown-color-plus.strikethrough.decoration.opacity": {
-					"type": "string",
-					"default": "0.60",
-					"markdownDescription": "Opacity of text between strikethrough markers"
-				},
 				"markdown-color-plus.invisibleLineBreak.background.lightThemeColor": {
 					"type": "string",
 					"default": "#FFE4C488",
@@ -91,6 +81,16 @@
 					"type": "string",
 					"default": "#4169E133",
 					"markdownDescription": "CSS color for invisible line breaks (2 spaces at the end of a line) on dark themes"
+				},
+				"markdown-color-plus.strikethrough.decoration.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable strikethrough decoration of text between strikethrough markers"
+				},
+				"markdown-color-plus.strikethrough.decoration.opacity": {
+					"type": "string",
+					"default": "0.60",
+					"markdownDescription": "Opacity of text between strikethrough markers"
 				},
 				"markdown-color-plus.currentHeaders.background.enabled": {
 					"type": "boolean",
