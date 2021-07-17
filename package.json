@@ -29,11 +29,13 @@
 				},
 				"markdown-color-plus.fencedCodeBlock.background.lightThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#DCDCDC66",
 					"markdownDescription": "CSS color for background of fenced code blocks on light themes"
 				},
 				"markdown-color-plus.fencedCodeBlock.background.darkThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#0A0A0A66",
 					"markdownDescription": "CSS color for background of fenced code blocks on dark themes"
 				},
@@ -44,11 +46,13 @@
 				},
 				"markdown-color-plus.indentedCodeBlock.background.lightThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#DCDCDC66",
 					"markdownDescription": "CSS color for background of indented code blocks on light themes"
 				},
 				"markdown-color-plus.indentedCodeBlock.background.darkThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#0A0A0A66",
 					"markdownDescription": "CSS color for background of indented code blocks on dark themes"
 				},
@@ -59,11 +63,13 @@
 				},
 				"markdown-color-plus.inlineCode.background.lightThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#DCDCDC66",
 					"markdownDescription": "CSS color for background of inline code on light themes"
 				},
 				"markdown-color-plus.inlineCode.background.darkThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#0A0A0A66",
 					"markdownDescription": "CSS color for background of inline code on dark themes"
 				},
@@ -74,11 +80,13 @@
 				},
 				"markdown-color-plus.invisibleLineBreak.background.lightThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#FFE4C488",
 					"markdownDescription": "CSS color for invisible line breaks (2 spaces at the end of a line) on light themes"
 				},
 				"markdown-color-plus.invisibleLineBreak.background.darkThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#4169E133",
 					"markdownDescription": "CSS color for invisible line breaks (2 spaces at the end of a line) on dark themes"
 				},
@@ -99,11 +107,13 @@
 				},
 				"markdown-color-plus.currentHeaders.background.lightThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#FFFACD70",
 					"markdownDescription": "CSS color of headers for current cursor position on light themes"
 				},
 				"markdown-color-plus.currentHeaders.background.darkThemeColor": {
 					"type": "string",
+					"format": "color",
 					"default": "#8A2BE240",
 					"markdownDescription": "CSS color of headers for current cursor position on dark themes"
 				},
