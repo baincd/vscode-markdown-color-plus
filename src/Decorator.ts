@@ -40,6 +40,7 @@ interface DecoratedRanges {
 	fencedCodeBlocks: vscode.DecorationOptions[];
 	indentedCodeBlocks: vscode.DecorationOptions[];
 	inlineCodeBlocks: vscode.DecorationOptions[];
+	horizontalRules: vscode.DecorationOptions[];
 	strikeThroughBlocks: vscode.DecorationOptions[];
 	invisibleLineBreaks: vscode.DecorationOptions[];
 	activeHeaders: HeaderDecorationOptions[];
@@ -178,7 +179,9 @@ function findAndProcessInvisibleLineBreaks(currentLineText: string, currentLineI
 
 function isHeader(document: vscode.TextDocument, currentLineText: string, currentLineIdx: number): HeaderLine | undefined {
 	let match: RegExpMatchArray | null;
-	if ( match = currentLineText.match(HeaderRegEx) ) {
+	if (currentLineText.trim().length == 0) {
+		return;
+	} else if ( match = currentLineText.match(HeaderRegEx) ) {
 		return {
 			headerLevel: match[3].length,
 			lineIdx: currentLineIdx,
@@ -229,8 +232,6 @@ function determinePrevLineListStatus(prevLineType: LineType, currentLineText: st
 	} else {
 		if (currentLineText.trim().length == 0) {
 			return LineType.WHITESPACE;
-		} else if (currentLineText.match(horizontalRuleRegEx)) {
-			return LineType.HORIZONTAL_RULE;
 		} else if (currentLineText.match(ListRegEx)) {
 			return LineType.LIST;
 		} else {
@@ -251,6 +252,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	const fencedCodeBlocks: vscode.DecorationOptions[] = [];
 	const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 	const inlineCodeBlocks: vscode.DecorationOptions[] = [];
+	const horizontalRules: vscode.DecorationOptions[] = [];
 	const strikeThroughBlocks: vscode.DecorationOptions[] = [];
 	const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
@@ -267,6 +269,9 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		} else if (isIndentedCodeBlockStart(currentLineText, document, currentLineIdx, prevLineType)) {
 			currentLineIdx = processIndentedCodeBlock(document, currentLineIdx, indentedCodeBlocks, token);
 			prevLineType = LineType.INDENTED_CODE_BLOCK;
+		} else if (currentLineText.match(horizontalRuleRegEx)) {
+			horizontalRules.push({range: new vscode.Range(currentLineIdx,0,currentLineIdx,document.lineAt(currentLineIdx).text.length)})
+			prevLineType = LineType.HORIZONTAL_RULE;
 		} else {
 			findAndProcessAllInlineDecorations(currentLineText, currentLineIdx, inlineCodeBlocks, strikeThroughBlocks, token);
 
@@ -290,6 +295,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 			fencedCodeBlocks:    (config.fencedCodeBlock.enabled    ? fencedCodeBlocks    : []),
 			indentedCodeBlocks:  (config.indentedCodeBlock.enabled  ? indentedCodeBlocks  : []),
 			inlineCodeBlocks:    (config.inlineCode.enabled         ? inlineCodeBlocks    : []),
+			horizontalRules:     (config.horizontalRule.enabled     ? horizontalRules     : []),
 			strikeThroughBlocks: (config.strikeThrough.enabled      ? strikeThroughBlocks : []),
 			invisibleLineBreaks: (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []),
 			activeHeaders:       (config.activeHeader.enabled       ? activeHeaders       : []),
@@ -298,6 +304,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		editor.setDecorations(config.fencedCodeBlock.decorationType,    decoratedRanges.fencedCodeBlocks);
 		editor.setDecorations(config.indentedCodeBlock.decorationType,  decoratedRanges.indentedCodeBlocks);
 		editor.setDecorations(config.inlineCode.decorationType,         decoratedRanges.inlineCodeBlocks);
+		editor.setDecorations(config.horizontalRule.decorationType,     decoratedRanges.horizontalRules);
 		editor.setDecorations(lineThroughDecoration,                    lineThroughBlocks(decoratedRanges.strikeThroughBlocks));
 		editor.setDecorations(config.strikeThrough.decorationType,      decoratedRanges.strikeThroughBlocks);
 		editor.setDecorations(config.invisibleLineBreak.decorationType, decoratedRanges.invisibleLineBreaks);
@@ -313,6 +320,7 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.fencedCodeBlock.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
+	editor.setDecorations(ConfigurationHandler.config.horizontalRule.decorationType, []);
 	editor.setDecorations(lineThroughDecoration, []);
 	editor.setDecorations(ConfigurationHandler.config.strikeThrough.decorationType, []);
 	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);

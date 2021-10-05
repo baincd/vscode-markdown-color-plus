@@ -73,6 +73,28 @@
 					"default": "#0A0A0A66",
 					"markdownDescription": "CSS color for background of inline code on dark themes"
 				},
+				"markdown-color-plus.horizontalRule.style.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable coloring the background of horizontal rules"
+				},
+				"markdown-color-plus.horizontalRule.style.background.lightThemeColor": {
+					"type": "string",
+					"format": "color",
+					"default": "#B0B0B0",
+					"markdownDescription": "CSS color for background of horizontal rules on light themes"
+				},
+				"markdown-color-plus.horizontalRule.style.background.darkThemeColor": {
+					"type": "string",
+					"format": "color",
+					"default": "#404040",
+					"markdownDescription": "CSS color for background of horizontal rules on dark themes"
+				},
+				"markdown-color-plus.horizontalRule.style.opacity": {
+					"type": "string",
+					"default": "0.60",
+					"markdownDescription": "Opacity of horizontal rule text"
+				},
 				"markdown-color-plus.invisibleLineBreak.background.enabled": {
 					"type": "boolean",
 					"default": true,

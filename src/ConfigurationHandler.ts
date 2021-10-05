@@ -15,6 +15,7 @@ export interface ExtensionConfiguration {
 	fencedCodeBlock: ExtensionFeatureConfig;
 	indentedCodeBlock: ExtensionFeatureConfig;
 	inlineCode: ExtensionFeatureConfig;
+	horizontalRule: ExtensionFeatureConfig;
 	strikeThrough: ExtensionFeatureConfig;
 	invisibleLineBreak: ExtensionFeatureConfig;
 	activeHeader: ExtensionFeatureConfig;
@@ -56,6 +57,16 @@ function doReadConfig(): ExtensionConfiguration {
 			decorationType: vscode.window.createTextEditorDecorationType({
 				light: { backgroundColor: colorizerConfig.get<string>('inlineCode.background.lightThemeColor') },
 				dark:  { backgroundColor: colorizerConfig.get<string>('inlineCode.background.darkThemeColor') },
+			})
+		},
+
+		horizontalRule: {
+			enabled: colorizerConfig.get<boolean>('horizontalRule.style.enabled',false),
+			decorationType: vscode.window.createTextEditorDecorationType({
+				light: { backgroundColor: colorizerConfig.get<string>('horizontalRule.style.background.lightThemeColor') },
+				dark:  { backgroundColor: colorizerConfig.get<string>('horizontalRule.style.background.darkThemeColor') },
+				opacity: colorizerConfig.get<string>('horizontalRule.style.opacity'),
+				isWholeLine: true
 			})
 		},
 
