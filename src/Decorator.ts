@@ -42,6 +42,7 @@ interface DecoratedRanges {
 	indentedCodeBlocks: vscode.DecorationOptions[];
 	inlineCodeBlocks: vscode.DecorationOptions[];
 	blockquoteLines: vscode.DecorationOptions[];
+	blockquoteSymbols: vscode.DecorationOptions[];
 	horizontalRules: vscode.DecorationOptions[];
 	strikeThroughBlocks: vscode.DecorationOptions[];
 	invisibleLineBreaks: vscode.DecorationOptions[];
@@ -67,7 +68,7 @@ const ListRegEx = /^[ ]{0,2}(?:-|\*|\+|\d+\.)\s+\S/
 
 const listParagraphRegEx = /^(?:[ ]{2,}|[ ]*\t)/;
 
-const blockquoteLineRegEx = /^ {0,3}>/;
+const BlockquoteSymbolRegEx = /^\s*>/;
 
 const nonWhitespaceRegEx = /\S/;
 
@@ -225,9 +226,26 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 
 
+function processIfBlockquote(currentLineText: string, currentLineIdx: number, prevLineType: LineType, blockquoteLines: vscode.DecorationOptions[], blockquoteSymbols: vscode.DecorationOptions[]): boolean {
+	let isBlockquoteLine = false;
+	let match = currentLineText.match(BlockquoteSymbolRegEx)
+	if (match) {
+		isBlockquoteLine = true;
 
-function isBlockquote(currentLineText: string, prevLineType: LineType) {
-	return currentLineText.match(blockquoteLineRegEx) || (prevLineType == LineType.BLOCKQUOTE && currentLineText.match(nonWhitespaceRegEx));
+		let offset = 0;
+		let remainingLine = currentLineText;
+		do {
+			offset = offset + match[0].length
+			blockquoteSymbols.push({ range: new vscode.Range(currentLineIdx,offset - 1,currentLineIdx,offset)});
+			remainingLine = remainingLine.substring(match[0].length)
+		} while (match = remainingLine.match(BlockquoteSymbolRegEx));
+		blockquoteLines.push({ range: new vscode.Range(currentLineIdx, offset, currentLineIdx, currentLineText.length)});
+	} else if (prevLineType == LineType.BLOCKQUOTE && currentLineText.match(nonWhitespaceRegEx)) {
+		blockquoteLines.push({ range: new vscode.Range(currentLineIdx, 0 ,currentLineIdx, currentLineText.length)});
+		isBlockquoteLine = true;
+	}
+
+	return isBlockquoteLine;
 }
 
 
@@ -268,6 +286,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	const indentedCodeBlocks: vscode.DecorationOptions[] = [];
 	const inlineCodeBlocks: vscode.DecorationOptions[] = [];
 	const blockquoteLines: vscode.DecorationOptions[] = [];
+	const blockquoteSymbols: vscode.DecorationOptions[] = [];
 	const horizontalRules: vscode.DecorationOptions[] = [];
 	const strikeThroughBlocks: vscode.DecorationOptions[] = [];
 	const invisibleLineBreaks: vscode.DecorationOptions[] = [];
@@ -298,16 +317,14 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 				prevLineType = LineType.HEADER;
 			} else {
 				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
-				if (isBlockquote(currentLineText, prevLineType)) {
-					blockquoteLines.push({ range: new vscode.Range(currentLineIdx,0,currentLineIdx,0)})
+				if (processIfBlockquote(currentLineText, currentLineIdx, prevLineType, blockquoteLines, blockquoteSymbols)) {
 					prevLineType = LineType.BLOCKQUOTE
 				} else {
 					prevLineType = determinePrevLineListStatus(prevLineType, currentLineText);
 				}
 			}
 		}
-
-	}
+	}	
 
 	if (!token?.isCancellationRequested) {
 		const config = ConfigurationHandler.config;
@@ -317,6 +334,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 			indentedCodeBlocks:  (config.indentedCodeBlock.enabled  ? indentedCodeBlocks  : []),
 			inlineCodeBlocks:    (config.inlineCode.enabled         ? inlineCodeBlocks    : []),
 			blockquoteLines:     (config.blockquoteLine.enabled     ? blockquoteLines     : []),
+			blockquoteSymbols:   (config.blockquoteSymbol.enabled   ? blockquoteSymbols   : []),
 			horizontalRules:     (config.horizontalRule.enabled     ? horizontalRules     : []),
 			strikeThroughBlocks: (config.strikeThrough.enabled      ? strikeThroughBlocks : []),
 			invisibleLineBreaks: (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []),
@@ -327,6 +345,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		editor.setDecorations(config.indentedCodeBlock.decorationType,  decoratedRanges.indentedCodeBlocks);
 		editor.setDecorations(config.inlineCode.decorationType,         decoratedRanges.inlineCodeBlocks);
 		editor.setDecorations(config.blockquoteLine.decorationType,     decoratedRanges.blockquoteLines);
+		editor.setDecorations(config.blockquoteSymbol.decorationType,   decoratedRanges.blockquoteSymbols);
 		editor.setDecorations(config.horizontalRule.decorationType,     decoratedRanges.horizontalRules);
 		editor.setDecorations(lineThroughDecoration,                    lineThroughBlocks(decoratedRanges.strikeThroughBlocks));
 		editor.setDecorations(config.strikeThrough.decorationType,      decoratedRanges.strikeThroughBlocks);
@@ -344,6 +363,7 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.indentedCodeBlock.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.inlineCode.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.blockquoteLine.decorationType,    []);
+	editor.setDecorations(ConfigurationHandler.config.blockquoteSymbol.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.horizontalRule.decorationType, []);
 	editor.setDecorations(lineThroughDecoration, []);
 	editor.setDecorations(ConfigurationHandler.config.strikeThrough.decorationType, []);

@@ -10,6 +10,7 @@ describe('Blockquote decorating', () => {
 
 	beforeEach('Enable all features', async () => {
 		ConfigurationHandler.config.blockquoteLine.enabled = true;
+		ConfigurationHandler.config.blockquoteSymbol.enabled = true;
 	});
 
 	afterEach('Close all editors',async () => {
@@ -46,11 +47,13 @@ describe('Blockquote decorating', () => {
 
 	it('should not highlight blockquote line when blockquote line highlighting is disabled', async () => {
 		ConfigurationHandler.config.blockquoteLine.enabled = false;
+		ConfigurationHandler.config.blockquoteSymbol.enabled = false;
 		const editor = await openMarkdownDocument(["", "> bq L1", "", "Text"])
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
 		expect(actual?.blockquoteLines).to.be.lengthOf(0);
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(0);
 	});
 
 	it('should highlight multiple blockquote lines', async () => {
@@ -103,16 +106,6 @@ describe('Blockquote decorating', () => {
 		expect(actual?.blockquoteLines[1].range.end.line).to.be.eq(2);
 	});
 
-	it('should highlight blockquote line without > that trails a blockquote line with >', async () => {
-		const editor = await openMarkdownDocument(["", "> bq 1", "bq 2"])
-
-		let actual = ClassUnderTest.updateDecorations(editor);
-
-		expect(actual?.blockquoteLines).to.be.lengthOf(2);
-		expect(actual?.blockquoteLines[1].range.start.line).to.be.eq(2);
-		expect(actual?.blockquoteLines[1].range.end.line).to.be.eq(2);
-	});
-
 	it('should consider whitespace line as end of blockquote', async () => {
 		const editor = await openMarkdownDocument(["", "> bq 1", "   ", "not bq"])
 
@@ -121,6 +114,93 @@ describe('Blockquote decorating', () => {
 		expect(actual?.blockquoteLines).to.be.lengthOf(1);
 		expect(actual?.blockquoteLines[0].range.start.line).to.be.eq(1);
 		expect(actual?.blockquoteLines[0].range.end.line).to.be.eq(1);
+	});
+
+
+	it('should decorate blockquote symbol at start of line', async () => {
+		const editor = await openMarkdownDocument(["", "> bq 1", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(1);
+		expect(actual?.blockquoteSymbols[0].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[0].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[0].range.start.character).to.be.eq(0);
+		expect(actual?.blockquoteSymbols[0].range.end.character).to.be.eq(1);
+	});
+
+	it('should not decorate blockquote symbol not on a blockquote line', async () => {
+		const editor = await openMarkdownDocument(["", "not a bq >", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(0);
+	});
+
+	it('should decorate blockquote symbol on correct line number', async () => {
+		const editor = await openMarkdownDocument(["> bq 1" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(1);
+		expect(actual?.blockquoteSymbols[0].range.start.line).to.be.eq(0);
+		expect(actual?.blockquoteSymbols[0].range.end.line).to.be.eq(0);
+		expect(actual?.blockquoteSymbols[0].range.start.character).to.be.eq(0);
+		expect(actual?.blockquoteSymbols[0].range.end.character).to.be.eq(1);
+	});
+
+	it('should decorate all blockquote used to identify blockquote', async () => {
+		const editor = await openMarkdownDocument(["", "> > >> bq level 4 > ", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(4);
+		expect(actual?.blockquoteSymbols[0].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[0].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[0].range.start.character).to.be.eq(0);
+		expect(actual?.blockquoteSymbols[0].range.end.character).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[1].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[1].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[1].range.start.character).to.be.eq(2);
+		expect(actual?.blockquoteSymbols[1].range.end.character).to.be.eq(3);
+		expect(actual?.blockquoteSymbols[2].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[2].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[2].range.start.character).to.be.eq(4);
+		expect(actual?.blockquoteSymbols[2].range.end.character).to.be.eq(5);
+		expect(actual?.blockquoteSymbols[3].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[3].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteSymbols[3].range.start.character).to.be.eq(5);
+		expect(actual?.blockquoteSymbols[3].range.end.character).to.be.eq(6);
+	});
+
+	it('should identify blockquote text chars', async () => {
+		const editor = await openMarkdownDocument(["", "> bq level 1 > ", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteLines).to.be.lengthOf(1);
+		expect(actual?.blockquoteLines[0].range.start.character).to.be.eq(1);
+		expect(actual?.blockquoteLines[0].range.end.character).to.be.eq(15);
+	});
+
+	it('should identify blockquote text chars when multiple blockquote symbols', async () => {
+		const editor = await openMarkdownDocument(["", "> > bq level 2 !!", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteLines).to.be.lengthOf(1);
+		expect(actual?.blockquoteLines[0].range.start.character).to.be.eq(3);
+		expect(actual?.blockquoteLines[0].range.end.character).to.be.eq(17);
+	});
+
+	it('should identify blockquote text chars as entire line when no leading blockquote symbol', async () => {
+		const editor = await openMarkdownDocument(["", "> BQ 1", "   Some Text! ", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteLines).to.be.lengthOf(2);
+		expect(actual?.blockquoteLines[1].range.start.character).to.be.eq(0);
+		expect(actual?.blockquoteLines[1].range.end.character).to.be.eq(14);
 	});
 
 });

@@ -103,6 +103,21 @@
 					"default": "0.70",
 					"markdownDescription": "Opacity of blockquotes"
 				},
+				"markdown-color-plus.blockquote.style.symbol.background.lightThemeColor": {
+					"type": "string",
+					"format": "color",
+					"markdownDescription": "CSS color for background of blockquote symbols on light themes"
+				},
+				"markdown-color-plus.blockquote.style.symbol.background.darkThemeColor": {
+					"type": "string",
+					"format": "color",
+					"markdownDescription": "CSS color for background of blockquote symbols on dark themes"
+				},
+				"markdown-color-plus.blockquote.style.symbol.opacity": {
+					"type": "string",
+					"default": "0.50",
+					"markdownDescription": "Opacity of blockquote symbols"
+				},
 				"markdown-color-plus.horizontalRule.style.enabled": {
 					"type": "boolean",
 					"default": true,
