@@ -13,6 +13,10 @@
 >
 > L1
 
+This is text 
+
+And some more text
+
 > # This is a L1 Block Quote Header
 >> This is an L2 Block Quote with an invisible line break  
 > > This is an L2 Block Quote

@@ -30,9 +30,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(1);
-		expect(actual?.blockquoteLines[0].range.start.line).to.be.eq(1);
-		expect(actual?.blockquoteLines[0].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteText[0].range.end.line).to.be.eq(1);
 	});
 
 	it('should highlight L1 blockquote line on other lines', async () => {
@@ -40,9 +40,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(1);
-		expect(actual?.blockquoteLines[0].range.start.line).to.be.eq(2);
-		expect(actual?.blockquoteLines[0].range.end.line).to.be.eq(2);
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range.start.line).to.be.eq(2);
+		expect(actual?.blockquoteText[0].range.end.line).to.be.eq(2);
 	});
 
 	it('should not highlight blockquote line when blockquote line highlighting is disabled', async () => {
@@ -52,7 +52,7 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(0);
+		expect(actual?.blockquoteText).to.be.lengthOf(0);
 		expect(actual?.blockquoteSymbols).to.be.lengthOf(0);
 	});
 
@@ -61,13 +61,13 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(3);
-		expect(actual?.blockquoteLines[0].range.start.line).to.be.eq(1);
-		expect(actual?.blockquoteLines[0].range.end.line).to.be.eq(1);
-		expect(actual?.blockquoteLines[1].range.start.line).to.be.eq(2);
-		expect(actual?.blockquoteLines[1].range.end.line).to.be.eq(2);
-		expect(actual?.blockquoteLines[2].range.start.line).to.be.eq(4);
-		expect(actual?.blockquoteLines[2].range.end.line).to.be.eq(4);
+		expect(actual?.blockquoteText).to.be.lengthOf(3);
+		expect(actual?.blockquoteText[0].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteText[0].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteText[1].range.start.line).to.be.eq(2);
+		expect(actual?.blockquoteText[1].range.end.line).to.be.eq(2);
+		expect(actual?.blockquoteText[2].range.start.line).to.be.eq(4);
+		expect(actual?.blockquoteText[2].range.end.line).to.be.eq(4);
 	});
 
 	it('should highlight blockquote line with leading spaces', async () => {
@@ -75,9 +75,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(1);
-		expect(actual?.blockquoteLines[0].range.start.line).to.be.eq(1);
-		expect(actual?.blockquoteLines[0].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteText[0].range.end.line).to.be.eq(1);
 	});
 
 	it('should not highlight blockquote line that start with 4 spaces', async () => {
@@ -85,7 +85,7 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(0);
+		expect(actual?.blockquoteText).to.be.lengthOf(0);
 	});
 
 	it('should not highlight blockquote line that does not have whitespace at the start', async () => {
@@ -93,7 +93,7 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(0);
+		expect(actual?.blockquoteText).to.be.lengthOf(0);
 	});
 
 	it('should highlight blockquote line without > that trails a blockquote line with >', async () => {
@@ -101,9 +101,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(2);
-		expect(actual?.blockquoteLines[1].range.start.line).to.be.eq(2);
-		expect(actual?.blockquoteLines[1].range.end.line).to.be.eq(2);
+		expect(actual?.blockquoteText).to.be.lengthOf(2);
+		expect(actual?.blockquoteText[1].range.start.line).to.be.eq(2);
+		expect(actual?.blockquoteText[1].range.end.line).to.be.eq(2);
 	});
 
 	it('should consider whitespace line as end of blockquote', async () => {
@@ -111,9 +111,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(1);
-		expect(actual?.blockquoteLines[0].range.start.line).to.be.eq(1);
-		expect(actual?.blockquoteLines[0].range.end.line).to.be.eq(1);
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range.start.line).to.be.eq(1);
+		expect(actual?.blockquoteText[0].range.end.line).to.be.eq(1);
 	});
 
 
@@ -178,9 +178,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(1);
-		expect(actual?.blockquoteLines[0].range.start.character).to.be.eq(1);
-		expect(actual?.blockquoteLines[0].range.end.character).to.be.eq(15);
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range.start.character).to.be.eq(1);
+		expect(actual?.blockquoteText[0].range.end.character).to.be.eq(15);
 	});
 
 	it('should identify blockquote text chars when multiple blockquote symbols', async () => {
@@ -188,9 +188,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(1);
-		expect(actual?.blockquoteLines[0].range.start.character).to.be.eq(3);
-		expect(actual?.blockquoteLines[0].range.end.character).to.be.eq(17);
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range.start.character).to.be.eq(3);
+		expect(actual?.blockquoteText[0].range.end.character).to.be.eq(17);
 	});
 
 	it('should identify blockquote text chars as entire line when no leading blockquote symbol', async () => {
@@ -198,9 +198,9 @@ describe('Blockquote decorating', () => {
 
 		let actual = ClassUnderTest.updateDecorations(editor);
 
-		expect(actual?.blockquoteLines).to.be.lengthOf(2);
-		expect(actual?.blockquoteLines[1].range.start.character).to.be.eq(0);
-		expect(actual?.blockquoteLines[1].range.end.character).to.be.eq(14);
+		expect(actual?.blockquoteText).to.be.lengthOf(2);
+		expect(actual?.blockquoteText[1].range.start.character).to.be.eq(0);
+		expect(actual?.blockquoteText[1].range.end.character).to.be.eq(14);
 	});
 
 });

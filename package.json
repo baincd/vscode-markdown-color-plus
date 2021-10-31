@@ -88,20 +88,20 @@
 					"format": "color",
 					"markdownDescription": "CSS color for background of blockquotes on dark themes"
 				},
-				"markdown-color-plus.blockquote.style.line.fontStyle": {
+				"markdown-color-plus.blockquote.style.text.fontStyle": {
 					"type": "string",
 					"default": "normal",
-					"markdownDescription": "CSS font style (normal, italic, etc.) of blockquotes",
+					"markdownDescription": "CSS font style (normal, italic, etc.) of blockquote text",
 					"examples": [
 						"normal",
 						"italic",
 						"oblique"
 					]
 				},
-				"markdown-color-plus.blockquote.style.line.opacity": {
+				"markdown-color-plus.blockquote.style.text.opacity": {
 					"type": "string",
 					"default": "0.70",
-					"markdownDescription": "Opacity of blockquotes"
+					"markdownDescription": "Opacity of blockquote text"
 				},
 				"markdown-color-plus.blockquote.style.symbol.background.lightThemeColor": {
 					"type": "string",
