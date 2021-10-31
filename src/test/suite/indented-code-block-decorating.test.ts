@@ -537,6 +537,15 @@ describe('Indented code block decorating', () => {
 		expect(actual?.indentedCodeBlocks[0].range.end.line).to.be.eq(2);
 	});
 
+	it('should not highlight indented line follows blockquote', async () => {
+		const editor = await openMarkdownDocument(["> BQ",
+		                                           "     Indented line (not code)"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.indentedCodeBlocks).to.be.lengthOf(0);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

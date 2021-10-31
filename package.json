@@ -73,6 +73,36 @@
 					"default": "#0A0A0A66",
 					"markdownDescription": "CSS color for background of inline code on dark themes"
 				},
+				"markdown-color-plus.blockquote.style.enabled": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable styles of blockquotes"
+				},
+				"markdown-color-plus.blockquote.style.line.background.lightThemeColor": {
+					"type": "string",
+					"format": "color",
+					"markdownDescription": "CSS color for background of blockquotes on light themes"
+				},
+				"markdown-color-plus.blockquote.style.line.background.darkThemeColor": {
+					"type": "string",
+					"format": "color",
+					"markdownDescription": "CSS color for background of blockquotes on dark themes"
+				},
+				"markdown-color-plus.blockquote.style.line.fontStyle": {
+					"type": "string",
+					"default": "normal",
+					"markdownDescription": "CSS font style (normal, italic, etc.) of blockquotes",
+					"examples": [
+						"normal",
+						"italic",
+						"oblique"
+					]
+				},
+				"markdown-color-plus.blockquote.style.line.opacity": {
+					"type": "string",
+					"default": "0.70",
+					"markdownDescription": "Opacity of blockquotes"
+				},
 				"markdown-color-plus.horizontalRule.style.enabled": {
 					"type": "boolean",
 					"default": true,

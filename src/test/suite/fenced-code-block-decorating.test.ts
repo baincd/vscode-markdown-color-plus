@@ -299,6 +299,17 @@ describe('Fenced code block decorating', () => {
 		expect(actual?.fencedCodeBlocks[0].range.end.line).to.be.eq(4);
 	});
 
+	it('should decorate a fenced code block that immediately follows a blockquote', async () => {
+		const editor = await openMarkdownDocument(["", "> BQ", "```java", "CodeLine", "```", ""])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.fencedCodeBlocks).to.be.lengthOf(1);
+		expect(actual?.fencedCodeBlocks[0].range.start.line).to.be.eq(3);
+		expect(actual?.fencedCodeBlocks[0].range.end.line).to.be.eq(3);
+	});
+
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

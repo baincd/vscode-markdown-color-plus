@@ -289,6 +289,16 @@ describe('Horizontal Rule decorating', () => {
 		expect(actual?.horizontalRules[0].range.end.line).to.be.eq(2);
 	});
 
+	it('should decorate horizontal rules following blockquote', async () => {
+		const editor = await openMarkdownDocument(["", "> BQ", "***"])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.horizontalRules).to.be.lengthOf(1);
+		expect(actual?.horizontalRules[0].range.start.line).to.be.eq(2);
+		expect(actual?.horizontalRules[0].range.end.line).to.be.eq(2);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {
