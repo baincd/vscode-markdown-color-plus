@@ -203,6 +203,22 @@ describe('Blockquote decorating', () => {
 		expect(actual?.blockquoteText[1].range.end.character).to.be.eq(14);
 	});
 
+	it('should not identify blockquote lines with more than 3 leading spaces', async () => {
+		const editor = await openMarkdownDocument(["", "text", "    > > > Not a BQ (cannot have more than 3 spaces)", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(0);
+	});
+
+	it('should not identify blockquote lines with leading tab', async () => {
+		const editor = await openMarkdownDocument(["", "text", "	> Not a BQ (cannot start with tab)", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(0);
+	});
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

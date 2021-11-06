@@ -68,7 +68,7 @@ const ListRegEx = /^[ ]{0,2}(?:-|\*|\+|\d+\.)\s+\S/
 
 const listParagraphRegEx = /^(?:[ ]{2,}|[ ]*\t)/;
 
-const BlockquoteSymbolRegEx = /^\s*>/;
+const BlockquoteSymbolRegEx = /^[ ]{0,3}>/;
 
 const nonWhitespaceRegEx = /\S/;
 
