@@ -16,6 +16,7 @@
             "preLaunchTask": "npm: watch"
         },
 		{
+			// TODO: Sometimes tests fail with "AssertionError: Target cannot be null or undefined.".  Root cause unknown, but subsequent test runs are successful.
 			"name": "Run Extension Tests",
 			"type": "extensionHost",
 			"request": "launch",
