@@ -18,6 +18,14 @@ All these features can be configured or disabled
 
 ![inline code example](images/example-inline-code.png)
 
+### Horizontal Rule
+
+![horizontal rule examples](images/example-horizontal-rules.png)
+
+### Blockquote
+
+![blockquote example](images/example-blockquote.png)
+
 ### Highlight invisible line breaks (2 trailing spaces)
 
 ![invisible line breaks example](images/example-invisible-line-breaks.png)
