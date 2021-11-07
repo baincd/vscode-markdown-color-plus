@@ -69,6 +69,7 @@ const ListRegEx = /^[ ]{0,2}(?:-|\*|\+|\d+\.)\s+\S/
 const listParagraphRegEx = /^(?:[ ]{2,}|[ ]*\t)/;
 
 const BlockquoteSymbolRegEx = /^[ ]{0,3}>/;
+const BlockquoteEmbeddedInListSymbolRegEx = /^\s*>/;
 
 const nonWhitespaceRegEx = /\S/;
 
@@ -228,7 +229,7 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 function processIfBlockquote(currentLineText: string, currentLineIdx: number, prevLineType: LineType, blockquoteTextLines: vscode.DecorationOptions[], blockquoteSymbols: vscode.DecorationOptions[]): boolean {
 	let isBlockquoteLine = false;
-	let match = currentLineText.match(BlockquoteSymbolRegEx)
+	let match = (prevLineType.startsWith("LIST") ? currentLineText.match(BlockquoteEmbeddedInListSymbolRegEx) : currentLineText.match(BlockquoteSymbolRegEx))
 	if (match) {
 		isBlockquoteLine = true;
 
@@ -318,7 +319,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 			} else {
 				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
 				if (processIfBlockquote(currentLineText, currentLineIdx, prevLineType, blockquoteTextLines, blockquoteSymbols)) {
-					prevLineType = LineType.BLOCKQUOTE
+					prevLineType = prevLineType.startsWith("LIST") ? LineType.LIST_PARAGRAPH : LineType.BLOCKQUOTE
 				} else {
 					prevLineType = determinePrevLineListStatus(prevLineType, currentLineText);
 				}

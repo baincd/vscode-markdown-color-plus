@@ -11,6 +11,7 @@ These are all considered a very low priority, with no current plans to be fixed.
 * Invisible line breaks will not be highlighted on non-table lines that start and end with |
 * Invisible line breaks within inline code is highlighted 
 * The header highlights do not refresh if you move the cursor to whitespace (making an edit or moving the cursor to text will update the header highlights)
+* Blockquote lines embedded in lists will be highlighted as blockquote even if invalid due to too many leading spaces/tabs
 
 ## Potential Feature Ideas
 

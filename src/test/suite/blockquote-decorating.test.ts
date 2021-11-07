@@ -219,7 +219,94 @@ describe('Blockquote decorating', () => {
 		expect(actual?.blockquoteText).to.be.lengthOf(0);
 	});
 
+	// Complex Examples
+	it('should not identify blockquote lines with more than 3 leading spaces', async () => {
+		const editor = await openMarkdownDocument(["", 	"> BQ","   > > BQ","    > > > BQ line, no BQ symbols (cannot have more than 3 leading spaces)", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(3);
+		expect(actual?.blockquoteText[0].range).to.satisfy(lineRange(1))
+		expect(actual?.blockquoteText[1].range).to.satisfy(lineRange(2))
+		expect(actual?.blockquoteText[2].range).to.satisfy(lineRange(3))
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(3);
+		expect(actual?.blockquoteSymbols[0].range).to.satisfy(symbolRange(1,0))
+		expect(actual?.blockquoteSymbols[1].range).to.satisfy(symbolRange(2,3))
+		expect(actual?.blockquoteSymbols[2].range).to.satisfy(symbolRange(2,5))
+	});
+
+	it('should not identify blockquote lines with tab or more than 3 leading spaces', async () => {
+		const editor = await openMarkdownDocument(["",	"text", "	> Not a BQ (cannot start with tab)", "", "  text", "    > Not a BQ (cannot have more than 3 spaces, even if previous text line as more than 3 spaces)", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(0);
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(0);
+	});
+
+	it('should identify blockquote lines with 5 leading spaces when embedded in list', async () => {
+		const editor = await openMarkdownDocument(["", "- list", "     > BQ (max number of spaces increases to 5 when after first level list)", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range).to.satisfy(lineRange(2))
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(1);
+		expect(actual?.blockquoteSymbols[0].range).to.satisfy(symbolRange(2,5))
+	});
+
+	it('should identify blockquote lines with leading tabs and spaces when embedded in list', async () => {
+		const editor = await openMarkdownDocument(["", "- list", "	 > BQ (max number of spaces increases to 5 when after first level list)", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(1);
+		expect(actual?.blockquoteText[0].range).to.satisfy(lineRange(2))
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(1);
+		expect(actual?.blockquoteSymbols[0].range).to.satisfy(symbolRange(2,2))
+	});
+
+	it('should identify multiple blockquote lines with leading tabs and spaces when embedded in list', async () => {
+		const editor = await openMarkdownDocument(["", "- list", "    > BQ", "    > BQ", "" ])
+
+		let actual = ClassUnderTest.updateDecorations(editor);
+
+		expect(actual?.blockquoteText).to.be.lengthOf(2);
+		expect(actual?.blockquoteText[0].range).to.satisfy(lineRange(2))
+		expect(actual?.blockquoteText[1].range).to.satisfy(lineRange(3))
+
+		expect(actual?.blockquoteSymbols).to.be.lengthOf(2);
+		expect(actual?.blockquoteSymbols[0].range).to.satisfy(symbolRange(2,4))
+		expect(actual?.blockquoteSymbols[1].range).to.satisfy(symbolRange(3,4))
+	});
+
+	
+
+	// "- list", "some list text", "", "     > BQ (max number of spaces increases to 5 when after first level list)", 
+
 });
+
+function lineRange(lineIdx: number): Function {
+	return function(r: vscode.Range) {
+		expect(r.start.line).to.be.equal(lineIdx);
+		expect(r.end.line).to.be.equal(lineIdx);
+		return r.start.line == lineIdx && r.end.line == lineIdx
+	}
+}
+
+function symbolRange(lineIdx: number, symbolIdx: number): Function {
+	return function(r: vscode.Range) {
+		expect(r.start.line).to.be.equal(lineIdx);
+		expect(r.end.line).to.be.equal(lineIdx);
+		expect(r.start.character).to.be.equal(symbolIdx);
+		expect(r.end.character).to.be.equal(symbolIdx + 1);
+		return r.start.line == lineIdx && r.end.line == lineIdx
+			&& r.start.character == symbolIdx && r.end.character == symbolIdx + 1
+	}
+}
 
 async function openMarkdownDocument(lines: string[]) {
 	let document = await vscode.workspace.openTextDocument({
