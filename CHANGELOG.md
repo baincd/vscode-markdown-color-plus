@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2021-11-07
+### Added
+- Horizontal Rule: Set horizontal rule lines background color and opacity
+- Blockquote: Set blockquote line background color, blockquote text font style and opacity, and blockquote symbol background color and opacity
+
 ## [1.4.1] - 2021-07-17
 ### Updated
 - Updated settings configuration to provide color picker in settings editor
