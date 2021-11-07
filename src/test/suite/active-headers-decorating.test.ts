@@ -464,6 +464,21 @@ describe('Active headers decorating', () => {
 		expect(actual?.activeHeaders[1].range.end.character).to.be.eq(12);
 	});
 
+	it('should not alternate header syntax if previous line is a blockquote', async () => {
+		const editor = await openMarkdownDocument(["> BQ", 
+		                                           "===", 
+		                                           "", 
+		                                           "> > BQ",
+		                                           "---",
+		                                           "",
+		                                           "Text"])
+
+		let actual = ClassUnderTest.updateDecorations(editor, new vscode.Position(5, 0));
+
+		expect(actual?.activeHeaders).to.be.lengthOf(0);
+	});
+
+
 });
 
 async function openMarkdownDocument(lines: string[]) {

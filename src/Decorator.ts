@@ -311,18 +311,17 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		} else {
 			findAndProcessAllInlineDecorations(currentLineText, currentLineIdx, inlineCodeBlocks, strikeThroughBlocks, token);
 
-			let headerLine = isHeader(document, currentLineText, currentLineIdx);
-			if (headerLine) {
+			let headerLine;
+			if (processIfBlockquote(currentLineText, currentLineIdx, prevLineType, blockquoteTextLines, blockquoteSymbols)) {
+				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
+				prevLineType = prevLineType.startsWith("LIST") ? LineType.LIST_PARAGRAPH : LineType.BLOCKQUOTE
+			} else if ( headerLine = isHeader(document, currentLineText, currentLineIdx)) {
 				processHeader(headerLine, selectedLineIdx, activeHeaders);
 				currentLineIdx = headerLine.endHeaderLineIdx;
 				prevLineType = LineType.HEADER;
 			} else {
 				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
-				if (processIfBlockquote(currentLineText, currentLineIdx, prevLineType, blockquoteTextLines, blockquoteSymbols)) {
-					prevLineType = prevLineType.startsWith("LIST") ? LineType.LIST_PARAGRAPH : LineType.BLOCKQUOTE
-				} else {
-					prevLineType = determinePrevLineListStatus(prevLineType, currentLineText);
-				}
+				prevLineType = determinePrevLineListStatus(prevLineType, currentLineText);
 			}
 		}
 	}	
