@@ -1,6 +1,7 @@
 .vscode/**
 **/*.ts
 **/*.map
+package-vsix.sh
 .gitignore
 tslint.json
 tsconfig.json
