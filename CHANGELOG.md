@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2022-11-27
+### Added
+- Note to README about potential conflicts with "Markdown All in One" extension
+### Changed
+- Rename primary branch to "main"
+### Fixed
+- Remediate dependency vulnerabilities
+
 ## [1.5.0] - 2021-11-07
 ### Added
 - Horizontal Rule: Set horizontal rule lines background color and opacity
