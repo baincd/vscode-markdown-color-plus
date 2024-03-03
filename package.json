@@ -197,6 +197,50 @@
 					"type": "integer",
 					"default": 100,
 					"markdownDescription": "Millisecond delay between changing text in a document and updating background colors.\n\n*Increasing this delay will reduce how often the extension loops through the document to update background colors, which could be beneficial if you work on very large markdown documents or have a slower workstation.*"
+				},
+				"markdown-color-plus.setextL1StyleHeader.style.text.enabled": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Enable style of text on Setext-style level 1 headers"
+				},
+				"markdown-color-plus.setextL1StyleHeader.style.text.lightThemeColor": {
+					"type": "string",
+					"format": "color",
+					"default": "#800000",
+					"markdownDescription": "CSS color for the text of Setext-style level 1 headers on light themes"
+				},
+				"markdown-color-plus.setextL1StyleHeader.style.text.darkThemeColor": {
+					"type": "string",
+					"format": "color",
+					"default": "#569CD6",
+					"markdownDescription": "CSS color for the text of Setext-style level 1 headers on dark themes"
+				},
+				"markdown-color-plus.setextL1StyleHeader.style.text.bold": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Make the text of Setext-style level 1 headers bold"
+				},
+				"markdown-color-plus.setextL2StyleHeader.style.text.enabled": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Enable style of text on Setext-style level 2 headers"
+				},
+				"markdown-color-plus.setextL2StyleHeader.style.text.lightThemeColor": {
+					"type": "string",
+					"format": "color",
+					"default": "#800000",
+					"markdownDescription": "CSS color for the text of Setext-style level 2 headers on light themes"
+				},
+				"markdown-color-plus.setextL2StyleHeader.style.text.darkThemeColor": {
+					"type": "string",
+					"format": "color",
+					"default": "#569CD6",
+					"markdownDescription": "CSS color for the text of Setext-style level 2 headers on dark themes"
+				},
+				"markdown-color-plus.setextL2StyleHeader.style.text.bold": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Make the text of Setext-style level 2 headers bold"
 				}
 			}
 		}

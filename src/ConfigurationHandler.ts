@@ -22,6 +22,8 @@ export interface ExtensionConfiguration {
 	strikeThrough: ExtensionFeatureConfig;
 	invisibleLineBreak: ExtensionFeatureConfig;
 	activeHeader: ExtensionFeatureConfig;
+	setextStyleHeaderL1: ExtensionFeatureConfig;
+	setextStyleHeaderL2: ExtensionFeatureConfig;
 }
 
 export function readConfig() {
@@ -118,6 +120,24 @@ function doReadConfig(): ExtensionConfiguration {
 				light: { backgroundColor: colorizerConfig.get<string>('currentHeaders.background.lightThemeColor') },
 				dark:  { backgroundColor: colorizerConfig.get<string>('currentHeaders.background.darkThemeColor') }
 			})
+		},
+
+		setextStyleHeaderL1: {
+			enabled: colorizerConfig.get<boolean>('setextL1StyleHeader.style.text.enabled',false),
+			decorationType: vscode.window.createTextEditorDecorationType({
+				light: { color: colorizerConfig.get<string>('setextL1StyleHeader.style.text.lightThemeColor') },
+				dark: { color: colorizerConfig.get<string>('setextL1StyleHeader.style.text.darkThemeColor') },
+				fontWeight: (colorizerConfig.get<boolean>('setextL1StyleHeader.style.text.bold') ? "bold" : undefined)
+			}),
+		},
+
+		setextStyleHeaderL2: {
+			enabled: colorizerConfig.get<boolean>('setextL2StyleHeader.style.text.enabled',false),
+			decorationType: vscode.window.createTextEditorDecorationType({
+				light: { color: colorizerConfig.get<string>('setextL2StyleHeader.style.text.lightThemeColor') },
+				dark: { color: colorizerConfig.get<string>('setextL2StyleHeader.style.text.darkThemeColor') },
+				fontWeight: (colorizerConfig.get<boolean>('setextL2StyleHeader.style.text.bold') ? "bold" : undefined)
+			}),
 		}
 
 	}

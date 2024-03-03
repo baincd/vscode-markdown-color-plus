@@ -12,6 +12,7 @@ interface HeaderDecorationOptions extends vscode.DecorationOptions {
 
 interface HeaderLine {
 	headerLevel: number,
+	setextHeader: boolean,
 	lineIdx: number,
 	startChar: number,
 	endChar: number,
@@ -47,6 +48,8 @@ interface DecoratedRanges {
 	strikeThroughBlocks: vscode.DecorationOptions[];
 	invisibleLineBreaks: vscode.DecorationOptions[];
 	activeHeaders: HeaderDecorationOptions[];
+	setextStyleL1Headers: vscode.DecorationOptions[];
+	setextStyleL2Headers: vscode.DecorationOptions[];
 }
 
 // RegExs based on https://github.com/microsoft/vscode/blob/a699ffaee62010c4634d301da2bbdb7646b8d1da/extensions/markdown-basics/syntaxes/markdown.tmLanguage.json
@@ -196,7 +199,8 @@ function isHeader(document: vscode.TextDocument, currentLineText: string, curren
 			lineIdx: currentLineIdx,
 			startChar: match[1].length,
 			endChar: match[1].length + match[2].length,
-			endHeaderLineIdx: currentLineIdx
+			endHeaderLineIdx: currentLineIdx,
+			setextHeader: false
 		};
 	} else if ( ++currentLineIdx < document.lineCount && (match = document.lineAt(currentLineIdx).text.match(AltHeaderRegEx)) ) {
 		return {
@@ -204,12 +208,13 @@ function isHeader(document: vscode.TextDocument, currentLineText: string, curren
 			lineIdx: currentLineIdx - 1,
 			startChar: currentLineText.length - currentLineText.trimLeft().length,
 			endChar: currentLineText.trimRight().length,
-			endHeaderLineIdx: currentLineIdx
+			endHeaderLineIdx: currentLineIdx,
+			setextHeader: true
 		};
 	}
 }
 
-function processHeader(headerLine: HeaderLine, cursorLineIdx: number | undefined, activeHeaders: HeaderDecorationOptions[]) {
+function processForActiveHeader(headerLine: HeaderLine, cursorLineIdx: number | undefined, activeHeaders: HeaderDecorationOptions[]) {
 	if (cursorLineIdx && headerLine.lineIdx <= cursorLineIdx) {
 		resetHeaderLevels(activeHeaders, headerLine.headerLevel);
 		if (headerLine.lineIdx < cursorLineIdx) {
@@ -225,7 +230,12 @@ function resetHeaderLevels(activeHeaders: HeaderDecorationOptions[], headerLevel
 
 }
 
-
+function processForSetextHeader(headerLine: HeaderLine, setextStyleHeaders: vscode.DecorationOptions[][]) {
+	if (headerLine.setextHeader) {
+		const headerDecorationRange = { range: new vscode.Range(headerLine.lineIdx, headerLine.startChar, headerLine.lineIdx, headerLine.endChar) };
+		setextStyleHeaders[headerLine.headerLevel - 1].push(headerDecorationRange);
+	}
+}
 
 function processIfBlockquote(currentLineText: string, currentLineIdx: number, prevLineType: LineType, blockquoteTextLines: vscode.DecorationOptions[], blockquoteSymbols: vscode.DecorationOptions[]): boolean {
 	let isBlockquoteLine = false;
@@ -292,6 +302,7 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 	const strikeThroughBlocks: vscode.DecorationOptions[] = [];
 	const invisibleLineBreaks: vscode.DecorationOptions[] = [];
 	const activeHeaders: HeaderDecorationOptions[] = [];
+	const setextStyleHeaders: vscode.DecorationOptions[][] = [[],[]];
 	
 	let prevLineType = LineType.START_OF_DOC;
 	let currentLineIdx = -1;
@@ -316,7 +327,8 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 				findAndProcessInvisibleLineBreaks(currentLineText, currentLineIdx, invisibleLineBreaks, token);
 				prevLineType = prevLineType.startsWith("LIST") ? LineType.LIST_PARAGRAPH : LineType.BLOCKQUOTE
 			} else if ( headerLine = isHeader(document, currentLineText, currentLineIdx)) {
-				processHeader(headerLine, selectedLineIdx, activeHeaders);
+				processForSetextHeader(headerLine, setextStyleHeaders);
+				processForActiveHeader(headerLine, selectedLineIdx, activeHeaders);
 				currentLineIdx = headerLine.endHeaderLineIdx;
 				prevLineType = LineType.HEADER;
 			} else {
@@ -330,30 +342,34 @@ export function updateDecorations(editor: vscode.TextEditor, pos?: vscode.Positi
 		const config = ConfigurationHandler.config;
 
 		const decoratedRanges: DecoratedRanges = {
-			fencedCodeBlocks:    (config.fencedCodeBlock.enabled    ? fencedCodeBlocks    : []),
-			indentedCodeBlocks:  (config.indentedCodeBlock.enabled  ? indentedCodeBlocks  : []),
-			inlineCodeBlocks:    (config.inlineCode.enabled         ? inlineCodeBlocks    : []),
-			blockquoteText:      (config.blockquoteLine.enabled     ? blockquoteTextLines : []),
-			blockquoteSymbols:   (config.blockquoteSymbol.enabled   ? blockquoteSymbols   : []),
-			horizontalRules:     (config.horizontalRule.enabled     ? horizontalRules     : []),
-			strikeThroughBlocks: (config.strikeThrough.enabled      ? strikeThroughBlocks : []),
-			invisibleLineBreaks: (config.invisibleLineBreak.enabled ? invisibleLineBreaks : []),
-			activeHeaders:       (config.activeHeader.enabled       ? activeHeaders       : []),
+			fencedCodeBlocks:     (config.fencedCodeBlock.enabled     ? fencedCodeBlocks      : []),
+			indentedCodeBlocks:   (config.indentedCodeBlock.enabled   ? indentedCodeBlocks    : []),
+			inlineCodeBlocks:     (config.inlineCode.enabled          ? inlineCodeBlocks      : []),
+			blockquoteText:       (config.blockquoteLine.enabled      ? blockquoteTextLines   : []),
+			blockquoteSymbols:    (config.blockquoteSymbol.enabled    ? blockquoteSymbols     : []),
+			horizontalRules:      (config.horizontalRule.enabled      ? horizontalRules       : []),
+			strikeThroughBlocks:  (config.strikeThrough.enabled       ? strikeThroughBlocks   : []),
+			invisibleLineBreaks:  (config.invisibleLineBreak.enabled  ? invisibleLineBreaks   : []),
+			activeHeaders:        (config.activeHeader.enabled        ? activeHeaders         : []),
+			setextStyleL1Headers: (config.setextStyleHeaderL1.enabled ? setextStyleHeaders[0] : []),
+			setextStyleL2Headers: (config.setextStyleHeaderL2.enabled ? setextStyleHeaders[1] : []),
 		}
 
-		editor.setDecorations(config.fencedCodeBlock.decorationType,    decoratedRanges.fencedCodeBlocks);
-		editor.setDecorations(config.indentedCodeBlock.decorationType,  decoratedRanges.indentedCodeBlocks);
-		editor.setDecorations(config.inlineCode.decorationType,         decoratedRanges.inlineCodeBlocks);
-		editor.setDecorations(config.blockquoteLine.decorationType,     decoratedRanges.blockquoteText);
-		editor.setDecorations(config.blockquoteText.decorationType,     decoratedRanges.blockquoteText);
-		editor.setDecorations(config.blockquoteSymbol.decorationType,   decoratedRanges.blockquoteSymbols);
-		editor.setDecorations(config.horizontalRule.decorationType,     decoratedRanges.horizontalRules);
-		editor.setDecorations(lineThroughDecoration,                    lineThroughBlocks(decoratedRanges.strikeThroughBlocks));
-		editor.setDecorations(config.strikeThrough.decorationType,      decoratedRanges.strikeThroughBlocks);
-		editor.setDecorations(config.invisibleLineBreak.decorationType, decoratedRanges.invisibleLineBreaks);
+		editor.setDecorations(config.fencedCodeBlock.decorationType,     decoratedRanges.fencedCodeBlocks);
+		editor.setDecorations(config.indentedCodeBlock.decorationType,   decoratedRanges.indentedCodeBlocks);
+		editor.setDecorations(config.inlineCode.decorationType,          decoratedRanges.inlineCodeBlocks);
+		editor.setDecorations(config.blockquoteLine.decorationType,      decoratedRanges.blockquoteText);
+		editor.setDecorations(config.blockquoteText.decorationType,      decoratedRanges.blockquoteText);
+		editor.setDecorations(config.blockquoteSymbol.decorationType,    decoratedRanges.blockquoteSymbols);
+		editor.setDecorations(config.horizontalRule.decorationType,      decoratedRanges.horizontalRules);
+		editor.setDecorations(lineThroughDecoration,                     lineThroughBlocks(decoratedRanges.strikeThroughBlocks));
+		editor.setDecorations(config.strikeThrough.decorationType,       decoratedRanges.strikeThroughBlocks);
+		editor.setDecorations(config.invisibleLineBreak.decorationType,  decoratedRanges.invisibleLineBreaks);
 		if (selectedLineIdx) {
 			editor.setDecorations(config.activeHeader.decorationType,       decoratedRanges.activeHeaders);
 		}
+		editor.setDecorations(config.setextStyleHeaderL1.decorationType, decoratedRanges.setextStyleL1Headers);
+		editor.setDecorations(config.setextStyleHeaderL2.decorationType, decoratedRanges.setextStyleL2Headers);
 
 		return decoratedRanges;
 	} 
@@ -370,6 +386,8 @@ export function clearDecorations(editor: vscode.TextEditor) {
 	editor.setDecorations(ConfigurationHandler.config.strikeThrough.decorationType, []);
 	editor.setDecorations(ConfigurationHandler.config.invisibleLineBreak.decorationType,    []);
 	editor.setDecorations(ConfigurationHandler.config.activeHeader.decorationType, []);
+	editor.setDecorations(ConfigurationHandler.config.setextStyleHeaderL1.decorationType, []);
+	editor.setDecorations(ConfigurationHandler.config.setextStyleHeaderL2.decorationType, []);
 }
 
 function lineThroughBlocks(strikeThroughBlocks: vscode.DecorationOptions[]): vscode.DecorationOptions[] {
