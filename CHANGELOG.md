@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2024-03-03
+### Added
+- Set text color and make bold alternate/setext-style headers ([#4](https://github.com/baincd/vscode-markdown-color-plus/issues/4))
+
 ## [1.5.1] - 2022-11-27
 ### Added
 - Note to README about potential conflicts with "Markdown All in One" extension
@@ -14,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.0] - 2021-11-07
 ### Added
-- Horizontal Rule: Set horizontal rule lines background color and opacity
-- Blockquote: Set blockquote line background color, blockquote text font style and opacity, and blockquote symbol background color and opacity
+- Horizontal Rule: Set horizontal rule lines background color and opacity ([#1](https://github.com/baincd/vscode-markdown-color-plus/issues/1))
+- Blockquote: Set blockquote line background color, blockquote text font style and opacity, and blockquote symbol background color and opacity ([#1](https://github.com/baincd/vscode-markdown-color-plus/issues/1))
 
 ## [1.4.1] - 2021-07-17
 ### Updated
