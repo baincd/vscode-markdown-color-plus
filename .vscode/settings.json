@@ -4,6 +4,7 @@
         "baincd",
         "blockquote",
         "blockquotes",
+        "setext",
         "strikethrough"
     ]
 }
