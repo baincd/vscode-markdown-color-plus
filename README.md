@@ -1,6 +1,6 @@
 # Markdown Color Plus
 
-Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, and current section headers)
+Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, setext headers, and highlighting current section headers)
 
 ## Features
 
@@ -33,6 +33,17 @@ All these features can be configured or disabled
 ### Strikethrough text
 
 ![strikethrough text example](images/example-strikethrough-text.png)
+
+### Alternate (setext-style) headers
+
+![setext-style headers example](images/example-setext-headers.png)
+
+##### Notes
+* This feature is disabled by default
+* The extension is unable to automatically use the markdown header colors of the current color theme.  In order to match your color theme
+  1. Open a markdown document
+  2. Use the command "Developer: Inspect Editor Tokens and Scopes" to find the color(s) your color theme uses for markdown headers 
+  3. Set the appropriate `markdown-color-plus.setext*StyleHeader.style.text.*ThemeColor` settings
 
 ### Highlight Current Section Headers
 
