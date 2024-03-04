@@ -38,12 +38,7 @@ All these features can be configured or disabled
 
 ![setext-style headers example](images/example-setext-headers.png)
 
-##### Notes
-* This feature is disabled by default
-* The extension is unable to automatically use the markdown header colors of the current color theme.  In order to match your color theme
-  1. Open a markdown document
-  2. Use the command "Developer: Inspect Editor Tokens and Scopes" to find the color(s) your color theme uses for markdown headers 
-  3. Set the appropriate `markdown-color-plus.setext*StyleHeader.style.text.*ThemeColor` settings
+**Note** This feature is disabled by default.  See [Alternate (setext-style) Header Colors](#alternate-setext-style-header-colors) for how to make alternate setext-style headers match your color theme.
 
 ### Highlight Current Section Headers
 
@@ -56,6 +51,15 @@ All these features can be configured or disabled
 * Selected text is not visibly highlighted if the background color is 100% opaque.  To fix this, [set the alpha channel](https://www.w3schools.com/css/css3_colors.asp) so that background is partially transparent.  This can be done by defining background colors using either of these formats:
 	- `#RRGGBBAA` (ex: `#0A0A0A66` → the "66" is the Alpha channel in hex.  "FF" is 100% opaque, "00" is 100% transparent, 66 is approx 40% opaque)
 	- `rgba(r,g,b,a)` (ex: `rgba(10,10,10,0.40)` → 0.40 is the opacity on a scale of 0.0-1.0)
+
+### Alternate (setext-style) Header Colors
+
+This extension is unable to automatically use the markdown header colors of the current color theme.  The default color settings for alternate headers matches the default VS Code color themes.
+
+To configure alternate headers to match your color theme:
+  1. Open a markdown document
+  2. Use the command "Developer: Inspect Editor Tokens and Scopes" to find the color(s) your color theme uses for markdown headers 
+  3. Set the corresponding `markdown-color-plus setext` color settings (and enable)
 
 ### Conflicts
 
