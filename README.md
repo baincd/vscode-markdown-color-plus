@@ -1,6 +1,6 @@
 # Markdown Color Plus
 
-Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, setext headers, and highlighting current section headers)
+Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, blockquotes, horizontal rules, setext headers, and highlighting current section headers)
 
 ## Features
 
@@ -18,14 +18,6 @@ All these features can be configured or disabled
 
 ![inline code example](images/example-inline-code.png)
 
-### Horizontal Rule
-
-![horizontal rule examples](images/example-horizontal-rules.png)
-
-### Blockquote
-
-![blockquote example](images/example-blockquote.png)
-
 ### Highlight invisible line breaks (2 trailing spaces)
 
 ![invisible line breaks example](images/example-invisible-line-breaks.png)
@@ -33,6 +25,14 @@ All these features can be configured or disabled
 ### Strikethrough text
 
 ![strikethrough text example](images/example-strikethrough-text.png)
+
+### Blockquote
+
+![blockquote example](images/example-blockquote.png)
+
+### Horizontal Rule
+
+![horizontal rule examples](images/example-horizontal-rules.png)
 
 ### Alternate (setext-style) headers
 

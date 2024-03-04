@@ -2,7 +2,7 @@
 	"publisher": "baincd",
 	"name": "markdown-color-plus",
 	"displayName": "Markdown Color Plus",
-	"description": "Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, setext headers, and highlighting current section headers)",
+	"description": "Additional Colorization for Markdown Files (background color of code, invisible line breaks, strikethrough text, blockquotes, horizontal rules, setext headers, and highlighting current section headers)",
 	"version": "1.6.0",
 	"license": "MIT",
 	"engines": {
