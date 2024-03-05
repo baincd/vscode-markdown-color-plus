@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2024-03-04
+### Changed
+- Reorganized README
+- Organized, grouped, and ordered configuration settings in settings editor
+
 ## [1.6.0] - 2024-03-03
 ### Added
 - Set text color and make bold alternate/setext-style headers ([#4](https://github.com/baincd/vscode-markdown-color-plus/issues/4))
